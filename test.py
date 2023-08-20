@@ -5,11 +5,15 @@ Created on Sat Aug 19 18:00:40 2023
 @author: Tommaso Giacometti
 """
 
-from protein_class import is_valid_sequence, is_valid_struct, get_dist
+from protein_class import is_valid_sequence, is_valid_struct, get_dist, Protein
 from math import isclose, sqrt
 
 
-correct_structures = [[[0,0],[0,1],[1,1],[1,2],[1,3],[2,3]],
+correct_structures = [[[0, 0],[0, 1],[1, 1],[1, 2],[1, 3],[2, 3],[2, 2],
+                      [2, 1],[2, 0],[2, -1],[1, -1],[0, -1],[-1, -1]],                    
+                      [[0, 0],[0, 1],[1, 1],[1, 2],[1, 3],[2, 3],[2, 2],
+                      [2, 1],[2, 0],[2, -1],[2, -2],[2, -3],[2, -4]],
+                      [[0,0],[0,1],[1,1],[1,2],[1,3],[2,3]],
                       [[0,0],[1,0],[1,1],[1,2],[1,3],[2,3]],
                       [[0,0],[0,-1],[1,-1],[1,-2],[1,-3],[2,-3]],
                       [[0,0],[1,0],[2,0],[2,1],[2,2],[2,3]],
@@ -23,6 +27,8 @@ correct_structures = [[[0,0],[0,1],[1,1],[1,2],[1,3],[2,3]],
                       [[0,0],[0,-1],[1,-1],[1,-2]],
                       [[0,0],[1,0],[2,0],[2,1]],
                       [[1,0],[0,0],[0,1],[0,2]]]
+
+seq = 'HPPHHPHPHPHHP'
 
 wrong_structures = [[[0,0],[0,0],[0,1],[0,2],[0,3],[1,3]],
                       [[0,0],[1,1],[1,2],[1,3],[2,3]],
@@ -112,4 +118,28 @@ def test_get_dist():
     assert isclose(get_dist((0,0), (1,1)), sqrt(2))
     assert isclose(get_dist((-1,1), (1,3)), 2*sqrt(2))  
         
+def test_energy_computation():
+    '''
+    Test the energy computation of the protein structures for two structures defined above.
+    '''
+    prot1 = Protein(seq, correct_structures[0])
+    prot2 = Protein(seq, correct_structures[1])
+    assert isclose(prot1.energy(), -2.)
+    assert isclose(prot2.energy(), -1.)
+    
+def test_get_neig():
+    '''
+    Test the get neighbors function using a hand made structure and a linear structure (which should not has neighbors)
+    '''
+    prot1 = Protein(seq, correct_structures[0])
+    neig = ['H','','P','H','','','H','P','','','','H','']
+    for i in range(prot1.n):
+        assert prot1.get_neig_of(i) == neig[i]
+    prot2 = Protein('HPHPHPHPPPPHHHHPPP')
+    for i in range(prot2.n):
+        assert prot2.get_neig_of(i) == ''
+        
+    
+    
+    
         
