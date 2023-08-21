@@ -6,6 +6,7 @@ Created on Sat Aug 19 18:00:40 2023
 """
 
 import protein_class as p
+import utils
 from math import isclose, sqrt
 
 
@@ -51,7 +52,7 @@ def test_is_valid_struct_when_correct(structures = correct_structures):
     '''
     
     for struct in structures:
-        assert p.is_valid_struct(struct)
+        assert utils.is_valid_struct(struct)
     
     
 def test_is_valid_struct_when_wrong(structures = wrong_structures):
@@ -65,7 +66,7 @@ def test_is_valid_struct_when_wrong(structures = wrong_structures):
     '''
     
     for struct in structures:
-        assert not p.is_valid_struct(struct)
+        assert not utils.is_valid_struct(struct)
     
 
 def test_is_valid_sequence_when_correct():
@@ -78,10 +79,10 @@ def test_is_valid_sequence_when_correct():
     THEN: I expect that the function return True
     '''
     
-    assert p.is_valid_sequence('HHHHHH')
-    assert p.is_valid_sequence('PPPPPPPPP')
-    assert p.is_valid_sequence('PHPHPPPPHHHPHPHPH')
-    assert p.is_valid_sequence('HPHPHHHP')
+    assert utils.is_valid_sequence('HHHHHH')
+    assert utils.is_valid_sequence('PPPPPPPPP')
+    assert utils.is_valid_sequence('PHPHPPPPHHHPHPHPH')
+    assert utils.is_valid_sequence('HPHPHHHP')
 
         
 def test_is_valid_sequence_when_wrong():
@@ -94,14 +95,14 @@ def test_is_valid_sequence_when_wrong():
     THEN: I expect that the function return False
     '''
     
-    assert not p.is_valid_sequence('HHHhHH')
-    assert not p.is_valid_sequence('PPPpPPPPP')
-    assert not p.is_valid_sequence('PHPAPPPPHHHPHPHPH')
-    assert not p.is_valid_sequence('HPHPLHHP')
-    assert not p.is_valid_sequence('HA')
-    assert not p.is_valid_sequence('HP')
-    assert not p.is_valid_sequence('P')
-    assert not p.is_valid_sequence('PPPHHHl')        
+    assert not utils.is_valid_sequence('HHHhHH')
+    assert not utils.is_valid_sequence('PPPpPPPPP')
+    assert not utils.is_valid_sequence('PHPAPPPPHHHPHPHPH')
+    assert not utils.is_valid_sequence('HPHPLHHP')
+    assert not utils.is_valid_sequence('HA')
+    assert not utils.is_valid_sequence('HP')
+    assert not utils.is_valid_sequence('P')
+    assert not utils.is_valid_sequence('PPPHHHl')        
         
         
 def test_get_dist():
@@ -112,11 +113,11 @@ def test_get_dist():
     WHEN: I want to compute the euclidean distance\n
     THEN: I expect the correct euclidean distance
     '''
-    assert isclose(p.get_dist((1,1), (1,1)), 0)
-    assert isclose(p.get_dist((1,1), (2,1)), 1)
-    assert isclose(p.get_dist((1,1), (3,1)), 2)
-    assert isclose(p.get_dist((0,0), (1,1)), sqrt(2))
-    assert isclose(p.get_dist((-1,1), (1,3)), 2*sqrt(2))  
+    assert isclose(utils.get_dist((1,1), (1,1)), 0)
+    assert isclose(utils.get_dist((1,1), (2,1)), 1)
+    assert isclose(utils.get_dist((1,1), (3,1)), 2)
+    assert isclose(utils.get_dist((0,0), (1,1)), sqrt(2))
+    assert isclose(utils.get_dist((-1,1), (1,3)), 2*sqrt(2))  
     
         
 def test_energy_computation():
@@ -155,12 +156,12 @@ def test_random_fold_valid_struc():
     prot1 = p.Protein(seq,correct_structures[0])
     for i in range(n):
         prot1.struct = prot1.random_fold()
-        assert p.is_valid_struct(prot1.struct)
+        assert utils.is_valid_struct(prot1.struct)
         
     prot2 = p.Protein('HPHPHPHPHPHHHHHPPHPHPHPPHHPPPPHHPP')
     for i in range(n):
         prot2.struct = prot2.random_fold()
-        assert p.is_valid_struct(prot2.struct)
+        assert utils.is_valid_struct(prot2.struct)
     
     
 def test_tail_fold_valid_struct():
