@@ -6,6 +6,7 @@ Created on Sat Aug 19 15:54:27 2023
 """
 from math import sqrt, isclose
 import matplotlib.pyplot as plt
+import random
 
 class Protein():
     '''
@@ -31,6 +32,7 @@ class Protein():
         If the sequence or structure are not valid or are not of compatible lengths.
     '''
     def __init__(self, seq : str, struct : list = None):
+        
         if is_valid_sequence(seq): # check that the sequence is valid
             self.seq = seq
         else:
@@ -61,8 +63,10 @@ class Protein():
         Function to plot the protein structure with matplotlib.
         '''
         assert is_valid_struct(self.struct)
+        
         x = [] # x coordinates of the monomers (ordered)
         y = [] # y coordinates of the monomers (ordered)
+        
         fig, ax = plt.subplots()
         for i in range(self.n):
             x.append(self.struct[i][0])
@@ -73,6 +77,7 @@ class Protein():
         ax.set_xlim(-self.n,self.n)
         ax.set_ylim(-self.n,self.n)
         plt.show()
+        
         pass
         
     
@@ -92,10 +97,12 @@ class Protein():
             The energy of the protein structure.
         '''
         count_h = 0 # counter of H-H neighbor pairs (exluding protein's backbone bonds)
+        
         for i,mon in enumerate(self.struct):
             if self.seq[i] == 'H':
                 neig = self.get_neig_of(i) # string of neighbors of i-th monomer (exluding protein's backbone bonds)
                 count_h += neig.count('H') 
+        
         tot_en = -e*count_h/2 # total energy of the prot struct (/2 because each bond is counted twice)
         return tot_en
                 
@@ -118,24 +125,117 @@ class Protein():
         '''
         neig = '' # string to save the neighbors
         x,y = self.struct[i] # coordinates of the monomer
+        
         if [x+1,y] in self.struct: # check each neighbor exist
             ind = self.struct.index([x+1,y]) # get the position on the sequence of the neighbor
             if ind != i+1 and ind != i-1: # exluding the backbone of the protein from neighbors
                 neig += self.seq[ind] # get the neighbor type H/P
+        
         if [x-1,y] in self.struct: # repeat the previus sequence for each neighbor in the sequence
             ind = self.struct.index([x-1,y])
             if ind != i+1 and ind != i-1:
                 neig += self.seq[ind]
+        
         if [x,y+1] in self.struct:
             ind = self.struct.index([x,y+1])
             if ind != i+1 and ind != i-1:
                 neig += self.seq[ind]
+        
         if [x,y-1] in self.struct:
             ind = self.struct.index([x,y-1])
             if ind != i+1 and ind != i-1:
                 neig += self.seq[ind]
-        return neig
         
+        return neig
+    
+    
+    def random_fold(self) -> list:
+        '''
+        Randomly choos a monomer in the protein (exluding the first and the last) and fold the protein with a
+        random method using the tail_fold function. If the structure generated is not valid
+        the process is repited until a valid structure is found.
+
+        Returns
+        -------
+        list
+            The new rotein streucture randomly folded (valid).
+        '''
+        while True: # cycle valid until a valid structure is found
+            index = random.randint(1, self.n-2) # select a random monomer where start the folding
+            x, y = self.struct[index] 
+            tail = self.struct[index:] # tail of the structure that wil be folded
+            
+            for i,mon in enumerate(tail): # shifting the tail with start on zero for the movement
+                tail[i] = [mon[0]-x, mon[1]-y]
+                
+            tail = tail_fold(tail) # fold the tail with a random method
+            
+            for i,mon in enumerate(tail): # shifting the folded tail in the correct position
+                tail[i] = [mon[0]+x, mon[1]+y]
+            
+            new_struct = self.struct[:index] # construction of the new structure generated
+            for mon in tail: # pasting the new tail
+                new_struct.append(mon)
+                
+            if is_valid_struct(new_struct): # if the structure is valid and the cycle 
+                break
+            
+        return new_struct
+
+
+def tail_fold(struct : list, method : int = None) -> list:
+    '''
+    Apply a rotation/inversion of symmetry at the sequence inserted.\n
+    If no method is specified a random one is choosed.\n
+    Are present 7 methods:
+        1: 90° clockwise rotation
+        2: 90° anticlockwise rotation
+        3: 180° rotaion
+        4: x-axis refletion
+        5: y-axis reflection
+        6: 1 and 3 quadrant bisector symmetry
+        7: 2 and 4 quadrant bisector symmetry
+
+    Parameters
+    ----------
+    struct : list
+        Structure of the sequence for which each element is the x and y coordinates of the monomer.
+    method : int, optional
+        The method to apply to the structure. If no method is specified a random one is choosed.
+
+    Returns
+    -------
+    list
+        The structure transformed.
+    '''
+    if method == None: # if a specific method is not specified a random one is choosed
+        method = random.randint(1, 7)
+        
+    new_tail = []
+    
+    if method == 1: # 90 rotation clockwise 
+        for x,y in struct:
+            new_tail.append([y,-x])
+    if method == 2: # 90 rotation anticlockwise
+        for x,y in struct:
+            new_tail.append([-y,x])
+    if method == 3: # 180 rotation
+        for x,y in struct:
+            new_tail.append([-x,-y])
+    if method == 4: # x-axis refletion
+        for x,y in struct:
+            new_tail.append([x,-y])
+    if method == 5: # y-axis reflection
+        for x,y in struct:
+            new_tail.append([-x,y])
+    if method == 6: # 1 and 3 quadrant bisector symmetry
+        for x,y in struct:
+            new_tail.append([-y,-x])
+    if method == 7: # 2 and 4 quadrant bisector symmetry
+        for x,y in struct:
+            new_tail.append([y,x])
+    return new_tail
+
 
 def is_valid_struct(struct : list) -> bool:
     '''
@@ -169,7 +269,7 @@ def is_valid_struct(struct : list) -> bool:
 
 def is_valid_sequence(seq : str) -> bool:
     '''
-    Check if the protein sequence contains only H and/or P.
+    Check if the protein sequence contains only H and/or P and its lengths is almost 3.
 
     Parameters
     ----------
@@ -181,7 +281,12 @@ def is_valid_sequence(seq : str) -> bool:
     bool
         True if the sequence is valid, False if is not.
     '''
+    if len(seq) < 3:
+        print('The sequence is too short. It must be at least 3.')
+        return False
+    
     unique_c = set(seq) # set of all the letters present in the sequence
+    
     if len(unique_c) == 2:
         if 'H' in unique_c and 'P' in unique_c:
             return True
@@ -214,9 +319,18 @@ def get_dist(coord1 : list, coord2 : list) -> float:
     
     
 if __name__ == '__main__':
+    random.seed(0)
     a = [[0, 0],[0, 1],[1, 1],[1, 2],[1, 3],[2, 3],[2, 2],
-         [2, 1],[2, 0],[2, -1],[1, -1],[0, -1],[-1, -1]]
-    seq = 'HPPHHPHPHPHHP'
+         [2, 1],[2, 0],[2, -1],[1, -1],[0, -1],[-1, -1],
+         [-1, -2],[-1, -3],[-1, -4],[-1, -5]]
+    seq = 'HPPHHPHPHPHHPHHHH'
     prot = Protein(seq,a)
     prot.view()
     
+    # for i in range(100):
+    #     prot.struct = prot.random_fold()
+    #     prot.view()
+        
+        
+        
+        
