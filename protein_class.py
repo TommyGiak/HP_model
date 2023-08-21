@@ -7,6 +7,8 @@ Created on Sat Aug 19 15:54:27 2023
 import matplotlib.pyplot as plt
 import random
 import utils
+import math
+import time
 
 class Protein():
     '''
@@ -54,9 +56,10 @@ class Protein():
         
         if not utils.is_valid_struct(self.struct): # check that the sequence is valid
             raise AssertionError('The structure is not a self avoid walk (SAW) or the distances between consecutive points is different from 1')
-            
-        pass
-    
+        
+        self.min_en_struct = self.struct # current min energy structure
+        self.en_evo = [self.energy()] # to keep track of the energy evolution
+        
     
     def view(self):
         '''
@@ -73,13 +76,50 @@ class Protein():
             y.append(self.struct[i][1])    
         ax.plot(x,y, alpha = 0.5)
         for i, coord in enumerate(self.struct):
-            ax.scatter(x[i], y[i], marker='$'+self.seq[i]+'$', s=25, color = 'red')
-        ax.set_xlim(-self.n,self.n)
-        ax.set_ylim(-self.n,self.n)
+            ax.scatter(x[i], y[i], marker='$'+self.seq[i]+'$', s=20, color = 'red')
+        ax.set_xlim(min(x)-6,max(x)+6)
+        ax.set_ylim(min(y)-6,max(y)+6)
+        en = self.energy()
+        string = f'Energy: {en}'
+        ax.text(0.01,0.99,string, ha='left', va='top', transform=ax.transAxes)
         plt.show()
+
         
-        pass
-        
+    def evolution(self, T : float = 0.5, steps : int = 10000):
+        '''
+        Let the system evolving for a certain number of steps of protein folds. 
+        The new structures are accepted following the Metropolis algorithm.\n
+        The temperature can be controlled.\n
+        The energy evolution values and min energy structure conformation are saved.
+
+        Parameters
+        ----------
+        T : float, optional
+            Temperature of the enviroment. The default is 0.5.
+        steps : int, optional
+            Number protein folds. The default is 10000.
+
+        Returns
+        -------
+        None.
+        '''
+        for i in range(steps):
+            en = self.energy() # current protein energy
+            init_str = self.struct # current protein structure
+            self.struct = self.random_fold() # the new structure already replace the previus one
+            new_en = self.energy() # the new energy is computed
+            
+            if new_en > en: # if the new energy higher the previus, the old structure remain following the Metropolis alg.
+                d_en = new_en-en
+                r = random.uniform(0, 1)
+                p = math.exp(-d_en/T)
+                if r > p:
+                    self.struct = init_str
+                    
+            if new_en < min(self.en_evo): # to save the min enrergy and structure
+                self.min_en_struct = self.struct
+            self.en_evo.append(new_en) # record the energy evolution
+    
     
     def energy(self, e = 1.) -> float:
         '''
@@ -147,7 +187,7 @@ class Protein():
                 neig += self.seq[ind]
         
         return neig
-    
+        
     
     def random_fold(self) -> list:
         '''
@@ -195,6 +235,7 @@ def tail_fold(struct : list, method : int = None) -> list:
         5: y-axis reflection
         6: 1 and 3 quadrant bisector symmetry
         7: 2 and 4 quadrant bisector symmetry
+        8: movement on a digaonal of a random monomer
 
     Parameters
     ----------
@@ -209,7 +250,7 @@ def tail_fold(struct : list, method : int = None) -> list:
         The structure transformed.
     '''
     if method == None: # if a specific method is not specified a random one is choosed
-        method = random.randint(1, 7)
+        method = random.randint(1, 8)
         
     new_tail = []
     
@@ -234,6 +275,9 @@ def tail_fold(struct : list, method : int = None) -> list:
     if method == 7: # 2 and 4 quadrant bisector symmetry
         for x,y in struct:
             new_tail.append([y,x])
+    if method == 8: # movement on the digonal
+        new_tail = utils.diagonal_move(struct)
+                
     return new_tail
     
     
@@ -242,14 +286,16 @@ if __name__ == '__main__':
     a = [[0, 0],[0, 1],[1, 1],[1, 2],[1, 3],[2, 3],[2, 2],
          [2, 1],[2, 0],[2, -1],[1, -1],[0, -1],[-1, -1],
          [-1, -2],[-1, -3],[-1, -4],[-1, -5]]
-    seq = 'HPPHHPHPHPHHPHHHH'
-    prot = Protein(seq,a)
+    seq = 'PHPPPHPPHHPHPPHPPPHPHPHPPPHPPPHHHPHPHPH'
+    prot = Protein(seq)
     prot.view()
     
-    # for i in range(100):
-    #     prot.struct = prot.random_fold()
-    #     prot.view()
-        
+    start = time.time()
+    
+    prot.evolution(T=0.5,steps=10000)
+    prot.view()
+
+    print(f'It took {time.time()-start:.3f} seconds')
         
         
         

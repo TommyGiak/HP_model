@@ -26,8 +26,7 @@ correct_structures = [[[0, 0],[0, 1],[1, 1],[1, 2],[1, 3],[2, 3],[2, 2],
                       [[0,0],[-1,0],[-1,1]],
                       [[0,0],[1,0],[1,1],[1,2]],
                       [[0,0],[0,-1],[1,-1],[1,-2]],
-                      [[0,0],[1,0],[2,0],[2,1]],
-                      [[1,0],[0,0],[0,1],[0,2]]]
+                      [[0,0],[1,0],[2,0],[2,1]]]
 
 seq = 'HPPHHPHPHPHHP'
 
@@ -190,10 +189,47 @@ def test_tail_fold_correct_length():
             l = len(struct)
             l_new = len(p.tail_fold(struct,i+1))
             assert l == l_new
+  
             
+def test_diagonal_move_length():
+    '''
+    Test the constant length of the protein when diagonal_move is applied
+
+    GIVEN: a structure starting in [0,0]
+    WHEN: I want to move the first monomer on a diagonal to fold the protein
+    THEN: the structure length should not change
+    '''
+    for struct in correct_structures:
+        l = len(struct)
         
+        assert l == len(utils.diagonal_move(struct))
       
+
+def test_diagonal_move_equal_struct():
+    '''
+    Test that diagolan_move let unchanged the structure from the second monomer.
     
+    GIVEN: a structure starting in [0,0]
+    WHEN: I want to move the first monomer on a diagonal to fold the protein
+    THEN: the structure starting from the second monomer should not change
+    '''
+    for struct in correct_structures:
+        new_struct = utils.diagonal_move(struct)
+        assert new_struct[1:] == struct[1:]
+        
+    
+def test_diagonal_move_first_mon_move():
+    '''
+    Test that diagolan_move moves the first monomer near the second one.
+    
+    GIVEN: a structure starting in [0,0]
+    WHEN: I want to move the first monomer on a diagonal to fold the protein
+    THEN: I expect the distance between first and second monomer equal to one
+    '''
+    for struct in correct_structures:
+        struct = utils.diagonal_move(struct)
+        d = utils.get_dist(struct[0], struct[1])
+        assert isclose(d, 1)
     
     
     

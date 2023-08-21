@@ -5,6 +5,7 @@ Created on Mon Aug 21 15:14:08 2023
 @author: Tommaso Giacometti
 """
 from math import sqrt, isclose
+import random
 
 
 def is_valid_struct(struct : list) -> bool:
@@ -85,3 +86,48 @@ def get_dist(coord1 : list, coord2 : list) -> float:
     '''
     dist = sqrt((coord1[0]-coord2[0])**2 + (coord1[1]-coord2[1])**2)
     return dist
+
+
+def diagonal_move(struct : list) -> list:
+    '''
+    Move the first monomer along a diagonal looking for the second monomer in the sequence.
+
+    Parameters
+    ----------
+    struct : list
+        Protein structure.
+
+    Returns
+    -------
+    list
+        The structure with the first monomer moved.
+    '''
+    case = random.randint(0, 1) # random movement respect the second monomer
+    x,y = struct[1] # second monomer coordinates
+
+    # movement settings
+    if x == 1:
+        if case == 0:
+            struct[0] = [1,1]
+        if case == 1:
+            struct[0] = [1,-1]
+    elif x == -1:
+        if case == 0:
+            struct[0] = [-1,1]
+        if case == 1:
+            struct[0] = [-1,-1]
+    elif y == 1:
+        if case == 0:
+            struct[0] = [1,1]
+        if case == 1:
+            struct[0] = [-1,1]
+    elif y == -1:
+        if case == 0:
+            struct[0] = [1,-1]
+        if case == 1:
+            struct[0] = [-1,-1]
+    else:
+        raise RuntimeError('No compatible information about the second monomer')
+    
+    return struct
+
