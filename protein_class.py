@@ -9,6 +9,7 @@ import random
 import utils
 import math
 import time
+import numpy as np
 
 class Protein():
     '''
@@ -59,14 +60,13 @@ class Protein():
         
         self.min_en_struct = self.struct # current min energy structure
         self.en_evo = [self.energy()] # to keep track of the energy evolution
+        self.T = [] # temperature evolution
         
     
     def view(self):
         '''
         Function to plot the protein structure with matplotlib.
         '''
-        assert utils.is_valid_struct(self.struct)
-        
         x = [] # x coordinates of the monomers (ordered)
         y = [] # y coordinates of the monomers (ordered)
         
@@ -79,13 +79,13 @@ class Protein():
             ax.scatter(x[i], y[i], marker='$'+self.seq[i]+'$', s=20, color = 'red')
         ax.set_xlim(min(x)-6,max(x)+6)
         ax.set_ylim(min(y)-6,max(y)+6)
-        en = self.energy()
+        en = min(self.en_evo)
         string = f'Energy: {en}'
         ax.text(0.01,0.99,string, ha='left', va='top', transform=ax.transAxes)
         plt.show()
 
         
-    def evolution(self, T : float = 0.5, steps : int = 10000):
+    def evolution(self, annealing : bool = True, T : float = 1., steps : int = 10000):
         '''
         Let the system evolving for a certain number of steps of protein folds. 
         The new structures are accepted following the Metropolis algorithm.\n
@@ -103,7 +103,10 @@ class Protein():
         -------
         None.
         '''
+        self.T.append(T) # initial temperature
+        m = -1/steps # angolar coefficient for the annealing
         for i in range(steps):
+            if annealing and T > 0.002 : T = m*(i - steps) # temperature decrease linearly if annealing
             en = self.energy() # current protein energy
             init_str = self.struct # current protein structure
             self.struct = self.random_fold() # the new structure already replace the previus one
@@ -119,6 +122,7 @@ class Protein():
             if new_en < min(self.en_evo): # to save the min enrergy and structure
                 self.min_en_struct = self.struct
             self.en_evo.append(new_en) # record the energy evolution
+            self.T.append(T) # record the T evolution
     
     
     def energy(self, e = 1.) -> float:
@@ -221,7 +225,64 @@ class Protein():
                 break
             
         return new_struct
+    
+    
+    def view_min_en(self):
+        '''
+        Function to plot the protein structure founded whit less energy with matplotlib.
+        '''
+        x = [] # x coordinates of the monomers (ordered)
+        y = [] # y coordinates of the monomers (ordered)
+        
+        fig, ax = plt.subplots()
+        for i in range(self.n):
+            x.append(self.min_en_struct[i][0])
+            y.append(self.min_en_struct[i][1])    
+        ax.plot(x,y, alpha = 0.5)
+        for i, coord in enumerate(self.struct):
+            ax.scatter(x[i], y[i], marker='$'+self.seq[i]+'$', s=20, color = 'red')
+        ax.set_xlim(min(x)-6,max(x)+6)
+        ax.set_ylim(min(y)-6,max(y)+6)
+        en = self.energy()
+        string = f'Energy: {en}'
+        ax.text(0.01,0.99,string, ha='left', va='top', transform=ax.transAxes)
+        plt.show()
+        
+    
+    def plot_energy(self, avg :int = 1) -> None:
+        '''
+        plot the energy evolution of the system
 
+        Parameters
+        ----------
+        avg : int, optional
+            The energy will be averaged every avg steps. The default is 1.
+
+        Returns
+        -------
+        Plot
+        '''
+        en_evo = np.array(self.en_evo[1:])
+        T = np.array(self.T[1:])
+        x = np.arange(0, len(en_evo), avg)
+        try:
+            en_evo = en_evo.reshape(-1,avg).mean(axis=1)
+            T = T.reshape(-1,avg).mean(axis=1)
+        except:
+            print(f'Mean procedure skipped since the number of time steps is not a multiple of the avarage required: {avg}')
+        fig, ax = plt.subplots()
+        ax.set_title(f'Energy evolution of the system averaged by {avg} time steps')
+        ax.set_xlabel('Time step')
+        ax.set_ylabel('Energy', color = 'b')
+        ax.tick_params(axis='y', labelcolor='b')
+        ax.plot(x, en_evo, color ='b')
+        ax_tw = ax.twinx()
+        ax_tw.set_ylabel('T', color = 'r')
+        ax_tw.tick_params(axis='y', labelcolor='r')
+        ax_tw.plot(x, T, color = 'r')
+        fig.tight_layout()
+        plt.show()
+        
 
 def tail_fold(struct : list, method : int = None) -> list:
     '''
@@ -286,14 +347,16 @@ if __name__ == '__main__':
     a = [[0, 0],[0, 1],[1, 1],[1, 2],[1, 3],[2, 3],[2, 2],
          [2, 1],[2, 0],[2, -1],[1, -1],[0, -1],[-1, -1],
          [-1, -2],[-1, -3],[-1, -4],[-1, -5]]
-    seq = 'PHPPPHPPHHPHPPHPPPHPHPHPPPHPPPHHHPHPHPH'
+    seq = 'PHPPPHPPHHPHPPHPPPHPHHHPHPHPPHPPPHHHPHPHPH'
     prot = Protein(seq)
     prot.view()
     
     start = time.time()
     
-    prot.evolution(T=0.5,steps=10000)
+    prot.evolution(steps=200000)
     prot.view()
+    prot.view_min_en()
+    prot.plot_energy(avg=20)
 
     print(f'It took {time.time()-start:.3f} seconds')
         
