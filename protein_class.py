@@ -61,6 +61,7 @@ class Protein():
         self.min_en_struct = self.struct # current min energy structure
         self.en_evo = [self.energy()] # to keep track of the energy evolution
         self.T = [] # temperature evolution
+        self.counter = [] # counter of number of folding per step
         
     
     def view(self):
@@ -79,7 +80,8 @@ class Protein():
             ax.scatter(x[i], y[i], marker='$'+self.seq[i]+'$', s=20, color = 'red')
         ax.set_xlim(min(x)-6,max(x)+6)
         ax.set_ylim(min(y)-6,max(y)+6)
-        en = min(self.en_evo)
+        ax.grid(alpha=0.2)
+        en = self.energy()
         string = f'Energy: {en}'
         ax.text(0.01,0.99,string, ha='left', va='top', transform=ax.transAxes)
         plt.show()
@@ -142,8 +144,8 @@ class Protein():
         '''
         count_h = 0 # counter of H-H neighbor pairs (exluding protein's backbone bonds)
         
-        for i,mon in enumerate(self.struct):
-            if self.seq[i] == 'H':
+        for i,seq in enumerate(self.seq):
+            if seq == 'H':
                 neig = self.get_neig_of(i) # string of neighbors of i-th monomer (exluding protein's backbone bonds)
                 count_h += neig.count('H') 
         
@@ -204,6 +206,8 @@ class Protein():
         list
             The new rotein streucture randomly folded (valid).
         '''
+        c = 0
+        
         while True: # cycle valid until a valid structure is found
             index = random.randint(1, self.n-2) # select a random monomer where start the folding
             x, y = self.struct[index] 
@@ -221,9 +225,12 @@ class Protein():
             for mon in tail: # pasting the new tail
                 new_struct.append(mon)
                 
+            c += 1
+                
             if utils.is_valid_struct(new_struct): # if the structure is valid and the cycle 
                 break
             
+        self.counter.append(c)
         return new_struct
     
     
@@ -243,7 +250,8 @@ class Protein():
             ax.scatter(x[i], y[i], marker='$'+self.seq[i]+'$', s=20, color = 'red')
         ax.set_xlim(min(x)-6,max(x)+6)
         ax.set_ylim(min(y)-6,max(y)+6)
-        en = self.energy()
+        ax.grid(alpha=0.2)
+        en = min(self.en_evo)
         string = f'Energy: {en}'
         ax.text(0.01,0.99,string, ha='left', va='top', transform=ax.transAxes)
         plt.show()
@@ -347,16 +355,16 @@ if __name__ == '__main__':
     a = [[0, 0],[0, 1],[1, 1],[1, 2],[1, 3],[2, 3],[2, 2],
          [2, 1],[2, 0],[2, -1],[1, -1],[0, -1],[-1, -1],
          [-1, -2],[-1, -3],[-1, -4],[-1, -5]]
-    seq = 'PHPPPHPPHHPHPPHPPPHPHHHPHPHPPHPPPHHHPHPHPH'
+    seq = 'PHPPPHPPHHPHHPPPHHHPHPHPH'
     prot = Protein(seq)
     prot.view()
     
     start = time.time()
     
-    prot.evolution(steps=200000)
+    prot.evolution(steps=30000)
     prot.view()
     prot.view_min_en()
-    prot.plot_energy(avg=20)
+    prot.plot_energy(avg=10)
 
     print(f'It took {time.time()-start:.3f} seconds')
         
