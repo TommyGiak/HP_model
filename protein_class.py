@@ -62,7 +62,8 @@ class Protein():
         self.en_evo = [self.energy()] # to keep track of the energy evolution
         self.T = [] # temperature evolution
         self.counter = [] # counter of number of folding per step
-        
+        self.comp_evo = [self.compactness()]
+        self.max_comp_struct = self.struct
     
     def view(self):
         '''
@@ -124,6 +125,9 @@ class Protein():
             if new_en < min(self.en_evo): # to save the min enrergy and structure
                 self.min_en_struct = self.struct
             self.en_evo.append(new_en) # record the energy evolution
+            self.comp_evo.append(self.compactness())
+            if self.comp_evo[-1] > max(self.comp_evo[:-1]):
+                self.max_comp_struct = self.struct
             self.T.append(T) # record the T evolution
     
     
@@ -151,6 +155,15 @@ class Protein():
         
         tot_en = -e*count_h/2 # total energy of the prot struct (/2 because each bond is counted twice)
         return tot_en
+    
+    
+    def compactness(self) -> int:
+        count_neig = 0 
+        
+        for i,seq in enumerate(self.seq):
+            count_neig += len(self.get_neig_of(i)) 
+        
+        return count_neig
                 
     
     def get_neig_of(self, i : int) -> str:
@@ -254,6 +267,28 @@ class Protein():
         en = min(self.en_evo)
         string = f'Energy: {en}'
         ax.text(0.01,0.99,string, ha='left', va='top', transform=ax.transAxes)
+        ax.set_title('Min energy structure')
+        plt.show()
+        
+        
+    def view_max_comp(self):
+        x = [] # x coordinates of the monomers (ordered)
+        y = [] # y coordinates of the monomers (ordered)
+        
+        fig, ax = plt.subplots()
+        for i in range(self.n):
+            x.append(self.max_comp_struct[i][0])
+            y.append(self.max_comp_struct[i][1])    
+        ax.plot(x,y, alpha = 0.5)
+        for i, coord in enumerate(self.struct):
+            ax.scatter(x[i], y[i], marker='$'+self.seq[i]+'$', s=20, color = 'red')
+        ax.set_xlim(min(x)-6,max(x)+6)
+        ax.set_ylim(min(y)-6,max(y)+6)
+        ax.grid(alpha=0.2)
+        ax.set_title('Max compactness structure')
+        en = Protein.energy(Protein(seq=self.seq,struct=self.max_comp_struct))
+        string = f'Energy: {en}'
+        ax.text(0.01,0.99,string, ha='left', va='top', transform=ax.transAxes)
         plt.show()
         
     
@@ -270,7 +305,7 @@ class Protein():
         -------
         Plot
         '''
-        en_evo = np.array(self.en_evo[1:])
+        en_evo = np.array(self.en_evo[1:].copy())
         T = np.array(self.T[1:])
         x = np.arange(0, len(en_evo), avg)
         try:
@@ -284,6 +319,30 @@ class Protein():
         ax.set_ylabel('Energy', color = 'b')
         ax.tick_params(axis='y', labelcolor='b')
         ax.plot(x, en_evo, color ='b')
+        ax_tw = ax.twinx()
+        ax_tw.set_ylabel('T', color = 'r')
+        ax_tw.tick_params(axis='y', labelcolor='r')
+        ax_tw.plot(x, T, color = 'r')
+        fig.tight_layout()
+        plt.show()
+        
+        
+    def plot_compactness(self, avg :int = 1) -> None:
+        comp = np.array(self.comp_evo[1:].copy())
+        comp = comp/max(comp)
+        T = np.array(self.T[1:])
+        x = np.arange(0, len(comp), avg)
+        try:
+            comp = comp.reshape(-1,avg).mean(axis=1)
+            T = T.reshape(-1,avg).mean(axis=1)
+        except:
+            print(f'Mean procedure skipped since the number of time steps is not a multiple of the avarage required: {avg}')
+        fig, ax = plt.subplots()
+        ax.set_title(f'Compactness evolution of the system averaged by {avg} time steps')
+        ax.set_xlabel('Time step')
+        ax.set_ylabel('Compactness', color = 'b')
+        ax.tick_params(axis='y', labelcolor='b')
+        ax.plot(x, comp, color ='b')
         ax_tw = ax.twinx()
         ax_tw.set_ylabel('T', color = 'r')
         ax_tw.tick_params(axis='y', labelcolor='r')
@@ -355,16 +414,18 @@ if __name__ == '__main__':
     a = [[0, 0],[0, 1],[1, 1],[1, 2],[1, 3],[2, 3],[2, 2],
          [2, 1],[2, 0],[2, -1],[1, -1],[0, -1],[-1, -1],
          [-1, -2],[-1, -3],[-1, -4],[-1, -5]]
-    seq = 'PHPPPHPPHHPHHPPPHHHPHPHPH'
+    seq = 'PHPPPHPPHHPHHPHPHPHPPPHHHPHPHPH'
     prot = Protein(seq)
     prot.view()
     
     start = time.time()
     
-    prot.evolution(steps=30000)
+    prot.evolution(steps=20000)
     prot.view()
     prot.view_min_en()
+    prot.view_max_comp()
     prot.plot_energy(avg=10)
+    prot.plot_compactness(avg=10)
 
     print(f'It took {time.time()-start:.3f} seconds')
         
