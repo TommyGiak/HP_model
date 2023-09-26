@@ -90,12 +90,15 @@ def get_dist(coord1 : list, coord2 : list) -> float:
 
 def diagonal_move(struct : list) -> list:
     '''
-    Move the first monomer along a diagonal looking for the second monomer in the sequence.
+    Move the first monomer along a diagonal looking for the second monomer in the sequence. \n
+    The information of the following monomer helps to the optimization of the algorithm. \n
+    It is assumed that the protein structure starts in [0,0], so the second monomer must have a coordinate eqaul
+    to +/- 1 and the other equal to zero.
 
     Parameters
     ----------
     struct : list
-        Protein structure.
+        Protein structure starting in [0,0].
 
     Returns
     -------

@@ -15,7 +15,7 @@ class Protein():
     '''
     Protein class that contains: the sequence of the protein (Protein.seq), the length of the sequence 
     (Protein.n) and the structure of the protein (Protein.struc). \n
-    When initialized it automatically check if the sequence and teh structure are valid. The structure is optional.
+    When initialized it automatically check if the sequence and the structure are valid. The structure is optional.
 
     Parameters
     ----------
@@ -43,7 +43,7 @@ class Protein():
             
         self.n = len(seq) # length of the sequence
         
-        if struct is None: # linear structur if struct is not specified
+        if struct is None: # linear structur assumed if struct is not specified as input
             self.struct = []
             for i in range(self.n):
                 self.struct.append([i,0])
@@ -56,18 +56,19 @@ class Protein():
             self.struct = struct
         
         if not utils.is_valid_struct(self.struct): # check that the sequence is valid
-            raise AssertionError('The structure is not a self avoid walk (SAW) or the distances between consecutive points is different from 1')
+            raise AssertionError('The structure is not a self avoid walk (SAW) or the distances between consecutive points are different from 1')
         
-        self.min_en_struct = self.struct # current min energy structure
-        self.en_evo = [self.energy()] # to keep track of the energy evolution
-        self.T = [] # temperature evolution
+        self.min_en_struct = self.struct # variable to record the min energy structure (for now is the only structure)
+        self.en_evo = [self.energy()] # list to keep track of the energy evolution
+        self.T = [] # list to keep track of the temperature evolution
         self.counter = [] # counter of number of folding per step
-        self.comp_evo = [self.compactness()]
-        self.max_comp_struct = self.struct
+        self.comp_evo = [self.compactness()] # list to keep track of the compactness evolution
+        self.max_comp_struct = self.struct # variable to record the max compact structure (for now is the only structure)
     
-    def view(self):
+    def view(self, tit = None):
         '''
         Function to plot the protein structure with matplotlib.
+        Title can be optionally inserted.
         '''
         x = [] # x coordinates of the monomers (ordered)
         y = [] # y coordinates of the monomers (ordered)
@@ -82,6 +83,8 @@ class Protein():
         ax.set_xlim(min(x)-6,max(x)+6)
         ax.set_ylim(min(y)-6,max(y)+6)
         ax.grid(alpha=0.2)
+        if tit is not None:
+            ax.set_title(tit)
         en = self.energy()
         string = f'Energy: {en}'
         ax.text(0.01,0.99,string, ha='left', va='top', transform=ax.transAxes)
@@ -90,13 +93,17 @@ class Protein():
         
     def evolution(self, annealing : bool = True, T : float = 1., steps : int = 10000):
         '''
-        Let the system evolving for a certain number of steps of protein folds. 
-        The new structures are accepted following the Metropolis algorithm.\n
+        Let the system evolving for a certain number of steps. 
+        New structures are accepted following the Metropolis algorithm (this function basically apply the Metropolis alg).\n
         The temperature can be controlled.\n
-        The energy evolution values and min energy structure conformation are saved.
+        The energy evolution values, min energy structure and compactness conformations are saved.
 
         Parameters
         ----------
+        annealing : bool, optional
+            If True, the temperature will slowly decrease as the steps increases.
+            If False the temperature will remain constant during all the evolution.
+            The default is True.
         T : float, optional
             Temperature of the enviroment. The default is 0.5.
         steps : int, optional
@@ -109,31 +116,33 @@ class Protein():
         self.T.append(T) # initial temperature
         m = -1/steps # angolar coefficient for the annealing
         for i in range(steps):
-            if annealing and T > 0.002 : T = m*(i - steps) # temperature decrease linearly if annealing
+            if annealing and T > 0.002 : T = m*(i - steps) # temperature decrease linearly w.r.t. the steps, if annealing is True
             en = self.energy() # current protein energy
             init_str = self.struct # current protein structure
-            self.struct = self.random_fold() # the new structure already replace the previus one
-            new_en = self.energy() # the new energy is computed
+            self.struct = self.random_fold() # new structure is generated
+            new_en = self.energy() # the energy of the new structure is computed
             
-            if new_en > en: # if the new energy higher the previus, the old structure remain following the Metropolis alg.
-                d_en = new_en-en
+            if new_en > en: # if the new energy is higher to the previus one, the new structure is accepted following the Metropolis alg
+                d_en = new_en - en # energy difference of the two states
                 r = random.uniform(0, 1)
-                p = math.exp(-d_en/T)
+                p = math.exp(-d_en/T) # probability to accept the new structure
                 if r > p:
                     self.struct = init_str
                     
             if new_en < min(self.en_evo): # to save the min enrergy and structure
                 self.min_en_struct = self.struct
             self.en_evo.append(new_en) # record the energy evolution
-            self.comp_evo.append(self.compactness())
+
+            self.comp_evo.append(self.compactness()) # save the compactness
             if self.comp_evo[-1] > max(self.comp_evo[:-1]):
                 self.max_comp_struct = self.struct
+
             self.T.append(T) # record the T evolution
     
     
     def energy(self, e = 1.) -> float:
         '''
-        Function to compute the energy of the protein srtucture. The binding energy can be inserted.
+        Function to compute the energy of the protein structure. The binding energy can be changed.
 
         Parameters
         ----------
@@ -158,6 +167,18 @@ class Protein():
     
     
     def compactness(self) -> int:
+        '''
+        Function to compute the compactness of the structure.
+        The compactness is the total number of neighbours of each monomer (backbone excluded).
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
+        '''
         count_neig = 0 
         
         for i,seq in enumerate(self.seq):
@@ -170,7 +191,7 @@ class Protein():
         '''
         Function to see which are the neighbors of the i-th monomer of the protein sequence.
         The bounded monomer are not considered neighbors.\n
-        The function return a string with the type of neighbor monomers: H/P.
+        The function return a string with the type of neighbour monomers: H/P.
 
         Parameters
         ----------
@@ -210,7 +231,7 @@ class Protein():
     
     def random_fold(self) -> list:
         '''
-        Randomly choos a monomer in the protein (exluding the first and the last) and fold the protein with a
+        Randomly choose a monomer in the protein (exluding the first and the last) and fold the protein with a
         random method using the tail_fold function. If the structure generated is not valid
         the process is repited until a valid structure is found.
 
@@ -219,14 +240,14 @@ class Protein():
         list
             The new rotein streucture randomly folded (valid).
         '''
-        c = 0
+        c = 0 # counter of the number of folding until a valid sequence is founded
         
         while True: # cycle valid until a valid structure is found
             index = random.randint(1, self.n-2) # select a random monomer where start the folding
             x, y = self.struct[index] 
-            tail = self.struct[index:] # tail of the structure that wil be folded
+            tail = self.struct[index:] # tail of the structure that will be folded
             
-            for i,mon in enumerate(tail): # shifting the tail with start on zero for the movement
+            for i,mon in enumerate(tail): # shifting the tail start in [0,0] for the folding
                 tail[i] = [mon[0]-x, mon[1]-y]
                 
             tail = tail_fold(tail) # fold the tail with a random method
@@ -243,7 +264,8 @@ class Protein():
             if utils.is_valid_struct(new_struct): # if the structure is valid and the cycle 
                 break
             
-        self.counter.append(c)
+        self.counter.append(c) # counter of the number of foldings
+
         return new_struct
     
     
@@ -272,6 +294,9 @@ class Protein():
         
         
     def view_max_comp(self):
+        '''
+        Function to plot the protein structure founded whit the max compactness.
+        '''
         x = [] # x coordinates of the monomers (ordered)
         y = [] # y coordinates of the monomers (ordered)
         
@@ -328,6 +353,18 @@ class Protein():
         
         
     def plot_compactness(self, avg :int = 1) -> None:
+        '''
+        plot the compactness evolution of the system
+
+        Parameters
+        ----------
+        avg : int, optional
+            The compactness will be averaged every avg steps. The default is 1.
+
+        Returns
+        -------
+        Plot
+        '''
         comp = np.array(self.comp_evo[1:].copy())
         comp = comp/max(comp)
         T = np.array(self.T[1:])
@@ -355,7 +392,7 @@ def tail_fold(struct : list, method : int = None) -> list:
     '''
     Apply a rotation/inversion of symmetry at the sequence inserted.\n
     If no method is specified a random one is choosed.\n
-    Are present 7 methods:
+    7 methods are present:
         1: 90° clockwise rotation
         2: 90° anticlockwise rotation
         3: 180° rotaion
