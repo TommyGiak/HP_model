@@ -173,7 +173,7 @@ def test_tail_fold_valid_struct():
     '''
     for struct in correct_structures:
         for i in range(7):
-            assert p.tail_fold(struct,i+1)
+            assert utils.tail_fold(struct,i+1)
             
             
 def test_tail_fold_correct_length():
@@ -187,7 +187,7 @@ def test_tail_fold_correct_length():
     for struct in correct_structures:
         for i in range(7):
             l = len(struct)
-            l_new = len(p.tail_fold(struct,i+1))
+            l_new = len(utils.tail_fold(struct,i+1))
             assert l == l_new
   
             

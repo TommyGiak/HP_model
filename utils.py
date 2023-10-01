@@ -134,3 +134,60 @@ def diagonal_move(struct : list) -> list:
     
     return struct
 
+
+def tail_fold(struct : list, method : int = None) -> list:
+    '''
+    Apply a rotation/inversion of symmetry at the sequence inserted.\n
+    If no method is specified a random one is choosed.\n
+    7 methods are present:
+        1: 90° clockwise rotation
+        2: 90° anticlockwise rotation
+        3: 180° rotaion
+        4: x-axis refletion
+        5: y-axis reflection
+        6: 1 and 3 quadrant bisector symmetry
+        7: 2 and 4 quadrant bisector symmetry
+        8: movement on a digaonal of a random monomer
+
+    Parameters
+    ----------
+    struct : list
+        Structure of the sequence for which each element is the x and y coordinates of the monomer.
+    method : int, optional
+        The method to apply to the structure. If no method is specified a random one is choosed.
+
+    Returns
+    -------
+    list
+        The structure transformed.
+    '''
+    if method == None: # if a specific method is not specified a random one is choosed
+        method = random.randint(1, 8)
+        
+    new_tail = []
+    
+    if method == 1: # 90 rotation clockwise 
+        for x,y in struct:
+            new_tail.append([y,-x])
+    if method == 2: # 90 rotation anticlockwise
+        for x,y in struct:
+            new_tail.append([-y,x])
+    if method == 3: # 180 rotation
+        for x,y in struct:
+            new_tail.append([-x,-y])
+    if method == 4: # x-axis refletion
+        for x,y in struct:
+            new_tail.append([x,-y])
+    if method == 5: # y-axis reflection
+        for x,y in struct:
+            new_tail.append([-x,y])
+    if method == 6: # 1 and 3 quadrant bisector symmetry
+        for x,y in struct:
+            new_tail.append([-y,-x])
+    if method == 7: # 2 and 4 quadrant bisector symmetry
+        for x,y in struct:
+            new_tail.append([y,x])
+    if method == 8: # movement on the digonal
+        new_tail = diagonal_move(struct)
+                
+    return new_tail

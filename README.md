@@ -15,10 +15,10 @@ Up to now the repository contain three pyhton files: _protein_class.py_, _utils.
 
 ## Algorithm for the protein folding
 
-The algorithm for the protein folding is implemented in the `Protein` class in the _protein_class.py_ file, plus the function `diagonal_move` in the _utils.py_ file.\
+The algorithm for the protein folding is implemented in the `Protein` class in the _protein_class.py_ file, plus the function `diagonal_move` and `tail_fold` in the _utils.py_ file.\
 Each folding step involve the following steps:
 1. choose a random monomer in the protein: a random integer from $0$ to $l-1$ where $l$ is the lenght of the protein sequence. The sampled monomer will be the starting point for the movement of the protein.
-1. sample a random integer in $[1,8]$ to randomly select a type of move, the movement are implemented in the function [`tail_fold`](https://github.com/TommyGiak/HP_model/blob/main/protein_class.py) in the `Protein` class. The movement are: 1 = 90° clockwise rotation, 2 = 90° anticlockwise rotation, 3 = 180° rotaion, 4 = x-axis refletion, 5 = y-axis reflection, 6 = 1 and 3 quadrant bisector symmetry, 7 = 2 and 4 quadrant bisector symmetry and 8 = movement on a digaonal of a random monomer. The movement can also be choosen a priori, if it is not specified a random one is selected.
+1. sample a random integer in $[1,8]$ to randomly select a type of move, the movement are implemented in the function [`tail_fold`](https://github.com/TommyGiak/HP_model/blob/main/utils.py) in the _utils.py_ file. The movement are: 1 = 90° clockwise rotation, 2 = 90° anticlockwise rotation, 3 = 180° rotaion, 4 = x-axis refletion, 5 = y-axis reflection, 6 = 1 and 3 quadrant bisector symmetry, 7 = 2 and 4 quadrant bisector symmetry and 8 = movement on a digaonal of a random monomer. The movement can also be choosen a priori, if it is not specified a random one is selected.
 1. the new protein is validated: if the protein sequence overlap (or the distance between neighbours is different from one) the process restart from the step 1.
 1. if the protein structure is valid the new structure (the folded protein) is passed.
 
