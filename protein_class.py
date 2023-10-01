@@ -15,13 +15,15 @@ class Protein():
     '''
     Protein class that contains: the sequence of the protein (Protein.seq), the length of the sequence 
     (Protein.n) and the structure of the protein (Protein.struc). \n
-    When initialized it automatically check if the sequence and the structure are valid. The structure is optional.
+    When initialized it automatically check if the sequence and the structure are valid. The structure is optional. \n
+    The protein sequence can be also coded in the 20 different amino acids (RNDQEHKSTACGILMFPWYV), in this case it will
+    be automatically converted into the HP sequence considering the polar and hydrophobic amino acids.
 
     Parameters
     ----------
     seq : str
-        Is a string of H and P of any length, if the sequence contains other letters, an error is raised. It is caps sensitive! 
-        So H and P must be upper case only.
+        Is a string of H and P of any length, if the sequence contains the 20 different amino-acids, it will be converted to HP sequences. It is caps sensitive! 
+        So use upper case letters.
     struct : list, optional
         List containing the x and y coordinate of every monomer of the protein as INTEGER, 
         the number of element must be the same of the length of the sequence.\n
@@ -36,11 +38,11 @@ class Protein():
     '''
     def __init__(self, seq : str, struct : list = None):
         
-        if utils.is_valid_sequence(seq): # check that the sequence is valid
+        if utils.is_valid_sequence(seq): # check that the sequence is valid (contains only HP)
             self.seq = seq
         else:
-            raise AssertionError('The protein sequence is not valid')
-            
+            self.seq = utils.hp_sequence_transform(seq) # if the sequence include the 20 different amino acids it will be coded in HP only
+
         self.n = len(seq) # length of the sequence
         
         if struct is None: # linear structur assumed if struct is not specified as input

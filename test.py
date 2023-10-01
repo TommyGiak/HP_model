@@ -29,6 +29,13 @@ correct_structures = [[[0, 0],[0, 1],[1, 1],[1, 2],[1, 3],[2, 3],[2, 2],
                       [[0,0],[1,0],[2,0],[2,1]]]
 
 seq = 'HPPHHPHPHPHHP'
+seq1 = 'MAGIIKKQILKHLSRFTKNLSPDKINLSTLKGEGELKNLELDEEVLQNMLDLPTWLAINK'
+seq2 = 'VFCNKASIRIPWTKLKTHPICLSLDKVIMEMSTCEEPRSPFAEK'
+seq3 = 'VVEGISVSVNSIVIRIGAKAFNASFELSQLRIYSVNAHWEHGDLRFTRIQDPQRGEV'
+seq4 = 'DLMSVVVFKITGVNGEIDIRGEDTEICLQVNQVTPDQLGNISLRHYLCNRPVGSDQKAVATVMPMKIQVSNTKINLKDDSPRSSTVSLEPAPVTVHIDHLVVERSDDGSFHIRDSHMLNTGNDLKENVKSDSV'
+seq5 = 'LTSGKYDLKKQRSVTQATQTSPGVPWPSQSANFPEFSFDFTREQLMEENESLKQELAKAKMALAEAHLEKDALLHHIKKMTVE'
+seq_invalid = 'ASDHLKGFDKJHDCVNB'
+
 
 wrong_structures = [[[0,0],[0,0],[0,1],[0,2],[0,3],[1,3]],
                       [[0,0],[1,1],[1,2],[1,3],[2,3]],
@@ -232,5 +239,37 @@ def test_diagonal_move_first_mon_move():
         assert isclose(d, 1)
     
     
+def test_hp_sequence_transform_letters():
+    '''
+    Test that hp_sequence_transform return a str with only H and P, if an invalid sequence is passed is should fail.
     
-        
+    GIVEN: a list of random sequences and an invalid sequence
+    WHEN: I want to convert a complete amino-acid sequence into a sequence with only H and P
+    THEN: I expect a string as return containing only H and P
+    '''
+    assert set(utils.hp_sequence_transform(seq1)) == {'H', 'P'}
+    assert set(utils.hp_sequence_transform(seq2)) == {'H', 'P'}
+    assert set(utils.hp_sequence_transform(seq3)) == {'H', 'P'}
+    assert set(utils.hp_sequence_transform(seq4)) == {'H', 'P'}
+    assert set(utils.hp_sequence_transform(seq5)) == {'H', 'P'}
+    try:
+        s = utils.hp_sequence_transform(seq_invalid)
+        raise ValueError('An invalid sequence is passed')
+    except:
+        pass
+
+
+def test_hp_sequence_transform_lenght():
+    '''
+    Test that hp_sequence_transform conserve the length of the sequence.
+    
+    GIVEN: a list of random sequences
+    WHEN: I want to convert a complete amino-acid sequence into a sequence with only H and P
+    THEN: I expect that the converted string has the same lenght than before
+    '''
+    assert len(utils.hp_sequence_transform(seq1)) == len(seq1)
+    assert len(utils.hp_sequence_transform(seq2)) == len(seq2)
+    assert len(utils.hp_sequence_transform(seq3)) == len(seq3)
+    assert len(utils.hp_sequence_transform(seq4)) == len(seq4)
+    assert len(utils.hp_sequence_transform(seq5)) == len(seq5)
+    

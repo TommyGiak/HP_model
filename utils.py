@@ -191,3 +191,34 @@ def tail_fold(struct : list, method : int = None) -> list:
         new_tail = diagonal_move(struct)
                 
     return new_tail
+
+
+def hp_sequence_transform(seq : str) -> str :
+    '''
+    Transform a compleate sequence of 20 amino-acids into the HP sequence used in the code as model.
+
+    Parameters
+    ----------
+    seq : list
+        Sequence containing the 20 different amino-acids (RNDQEHKSTACGILMFPWYV), they must be upper case letters.
+
+    Returns
+    -------
+    str
+        The sequence converted into only H/P.  
+    '''
+
+    polar = 'RNDQEHKST' # polar amino acids 
+    hydr = 'ACGILMFPWYV' # hydrophobic amino acids
+
+    hp_seq ='' # string where to save the hp sequence
+
+    for amin in seq:
+        if amin in polar:
+            hp_seq += 'P'
+        elif amin in hydr:
+            hp_seq += 'H'
+        else:
+            raise ValueError(f'Amino acids {amin} not recognized')
+    
+    return hp_seq
