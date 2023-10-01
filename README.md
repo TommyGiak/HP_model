@@ -5,10 +5,21 @@ The HP model is a simply model that can help to understand basic folding behavio
 I want to create a command line application that can take the sequence of a protein (even with the 20 distinct aminoacids) and can run a HP model simulation of the folding process of the protein at given temperatures using, optionally, annealing algorithms and giving as outputs the energy evolution of the system, the structure of the protein the native structure energy and the compactness.\
 This project can be used to have a first impact of the behaviour of a protein and can be used to study the transitions to native states of proteins as function of temperature and bounding energy. Can be also done different test and comparison, for example seeing the different behaviours of similar proteins when two random adjacent aminoacids are switched.
 
+## Run the code
+
+From the _terminal_ create an empty folder and clone this repository using the following command:
+```shell
+git clone https://github.com/TommyGiak/HP_model.git
+```
+Once the github repository is cloned run:
+```shell
+python main.py
+```
 
 ## Repository strurcture
 
 Up to now the repository contain three pyhton files: _protein_class.py_, _utils.py_, _test.py_.
+- _main.py_: run the scripts
 - _protein_class.py_: contain a class named `Protein` which contains and save the protein information and implement all the main function for the evolution of the system, including the plot functions.
 - _utils.py_: contain different functions to validate the structures of the proteins and to support the evolution of the protein.
 -  _test.py_: contain the test functions to test all the code.

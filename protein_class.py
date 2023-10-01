@@ -386,27 +386,3 @@ class Protein():
         ax_tw.plot(x, T, color = 'r')
         fig.tight_layout()
         plt.show()
-
-    
-if __name__ == '__main__':
-    random.seed(0)
-    a = [[0, 0],[0, 1],[1, 1],[1, 2],[1, 3],[2, 3],[2, 2],
-         [2, 1],[2, 0],[2, -1],[1, -1],[0, -1],[-1, -1],
-         [-1, -2],[-1, -3],[-1, -4],[-1, -5]]
-    seq = 'PHPPPHPPHHPHHPHPHPHPPPHHHPHPHPH'
-    prot = Protein(seq)
-    prot.view()
-    
-    start = time.time()
-    
-    prot.evolution(steps=20000)
-    prot.view()
-    prot.view_min_en()
-    prot.view_max_comp()
-    prot.plot_energy(avg=10)
-    prot.plot_compactness(avg=10)
-
-    print(f'It took {time.time()-start:.3f} seconds')
-        
-        
-        
