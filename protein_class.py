@@ -42,6 +42,7 @@ class Protein():
             self.seq = seq
         else:
             self.seq = utils.hp_sequence_transform(seq) # if the sequence include the 20 different amino acids it will be coded in HP only
+            print('\033[42mThe sequence was converted into binary configuration -> ', self.seq, '\033[0;0m')
 
         self.n = len(seq) # length of the sequence
         
@@ -49,7 +50,7 @@ class Protein():
             self.struct = []
             for i in range(self.n):
                 self.struct.append([i,0])
-            print('Linear initial structure assumed')
+            print('\033[43mLinear initial structure assumed \033[0;0m')
         else:
             try: # check that sequence has the right length
                 assert len(struct) == self.n

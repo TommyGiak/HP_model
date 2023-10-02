@@ -1,20 +1,29 @@
 from protein_class import Protein
 import random
 import time
+import configparser
 
 
 random.seed(0)
-# structure for tests 
-a = [[0, 0],[0, 1],[1, 1],[1, 2],[1, 3],[2, 3],[2, 2],
-     [2, 1],[2, 0],[2, -1],[1, -1],[0, -1],[-1, -1],
-     [-1, -2],[-1, -3],[-1, -4],[-1, -5]]
-seq = 'MAGIIKKQILKHFPKSCDNFNLLHPIFQRHAHEQDTKMHEIYKGNITPQLNKNTLKTSAATDVWAVYFSQFWIDYEGMKSGKGRPISFVDSFPLSIWIC'
-prot = Protein(seq) 
+
+config = configparser.ConfigParser()
+config.read('config.txt')
+
+seq = config['SEQUENCE']['sequence']
+folds = config['PROCESS'].getint('folding_steps')
+use_struct = config['optional'].getboolean('use_structure')
+
+if use_struct:
+    struct = config['optional']['structure']
+    struct = list(struct)
+    prot = Protein(seq,struct=struct)
+else:
+    prot = Protein(seq)
+
 prot.view() # plot the structure of the protein
 
-start = time.time()
+start = time.time() 
 
-folds = 2000
 prot.evolution(steps=folds) # evolve the protein with folds foldings
 prot.view() # plot the final structure of the protein
 prot.view_min_en()
