@@ -2,20 +2,31 @@ from protein_class import Protein
 import random
 import time
 import configparser
+import argparse
+import json
 
 
 random.seed(0)
 
-config = configparser.ConfigParser()
-config.read('config.txt')
+# Parser to get from terminal the configuration file
+parser = argparse.ArgumentParser()
+# the filename is optional, the default is the config.txt
+parser.add_argument('configuration_file', help='file from which takes the configuration', default = 'config.txt', nargs='?')
 
-seq = config['SEQUENCE']['sequence']
-folds = config['PROCESS'].getint('folding_steps')
-use_struct = config['optional'].getboolean('use_structure')
+args = parser.parse_args() # get the args written in the terminal
+filename = args.configuration_file # assign filename
+
+# setting the parameters from configuration file
+config = configparser.ConfigParser()
+config.read(filename)
+
+seq = config['SEQUENCE']['sequence'] # selected sequence
+folds = config['PROCESS'].getint('folding_steps') # number of folds
+use_struct = config['optional'].getboolean('use_structure') # if use the structure present in config file or use linear structure
 
 if use_struct:
     struct = config['optional']['structure']
-    struct = list(struct)
+    struct = json.loads(struct)
     prot = Protein(seq,struct=struct)
 else:
     prot = Protein(seq)
