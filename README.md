@@ -19,14 +19,14 @@ Once the github repository is cloned use the following command to run the script
 python main.py
 ```
 
-the default configuration file is _config.txt_ where can be setted the parameters look (here)[https://github.com/TommyGiak/HP_model#parameters-setting].\
+the default configuration file is _config.txt_ where can be setted the parameters look [here](https://github.com/TommyGiak/HP_model#parameters-setting).\
 To use a specific configuration file use:
 
 ```shell
 python main.py <filename>
 ```
 
-To create a personalized configuration file look (here)[https://github.com/TommyGiak/HP_model#create-a-personalized-configuration-file]
+To create a personalized configuration file look [here](https://github.com/TommyGiak/HP_model#create-a-personalized-configuration-file)
 
 ## Parameters setting
 
@@ -42,7 +42,7 @@ The number of folding steps can be setted in the _config.txt_ file at the _foldi
 
 ### Create a personalized configuration file
 
-To create a personalized configuration file you can just copy the sintax of the _config.txt_ changing the parameters as you prefer. To use it in the simulation follow the instruction (here)[https://github.com/TommyGiak/HP_model#run-the-code]. 
+To create a personalized configuration file you can just copy the sintax of the _config.txt_ changing the parameters as you prefer. To use it in the simulation follow the instruction [here](https://github.com/TommyGiak/HP_model#run-the-code).
 
 ## Repository strurcture
 
