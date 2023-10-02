@@ -16,6 +16,16 @@ Once the github repository is cloned run:
 python main.py
 ```
 
+## Parameters setting
+
+### Insert the protein sequence
+
+The protein sequence can be written in the _config.txt_ file at the _sequence_ variable. The sequence is caps sensitive so the letters must be upper case only. The sequence doesn't need the quotation marks " or ' .
+
+### Change the number of folding steps
+
+The number of folding steps can be setted in the _config.txt_ file at the _folding\_step_ variable.
+
 ## Repository strurcture
 
 Up to now the repository contain three pyhton files: _protein_class.py_, _utils.py_, _test.py_.
