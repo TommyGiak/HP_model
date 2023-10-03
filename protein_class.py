@@ -67,11 +67,13 @@ class Protein():
         self.counter = [] # counter of number of folding per step
         self.comp_evo = [self.compactness()] # list to keep track of the compactness evolution
         self.max_comp_struct = self.struct # variable to record the max compact structure (for now is the only structure)
-    
-    def view(self, tit = None):
+
+
+    def view(self, save = True, tit = None):
         '''
         Function to plot the protein structure with matplotlib.
         Title can be optionally inserted.
+        If save == True the plot will be also saved as pdf.
         '''
         x = [] # x coordinates of the monomers (ordered)
         y = [] # y coordinates of the monomers (ordered)
@@ -89,9 +91,14 @@ class Protein():
         if tit is not None:
             ax.set_title(tit)
         en = self.energy()
+        comp = self.compactness()
         string = f'Energy: {en}'
-        ax.text(0.01,0.99,string, ha='left', va='top', transform=ax.transAxes)
-        plt.show()
+        string_comp = f'Compactness: {comp/(max(self.comp_evo)+10e-15):.2f}'
+        ax.text(0.01,0.99, string, ha='left', va='top', transform=ax.transAxes)
+        ax.text(0.01,0.95, string_comp, ha='left', va='top', transform=ax.transAxes)
+        plt.show(block=False)
+        if save:
+            plt.savefig("data/prot_view.pdf", format="pdf", bbox_inches="tight")
 
         
     def evolution(self, annealing : bool = True, T : float = 1., steps : int = 10000):
@@ -277,9 +284,10 @@ class Protein():
         return new_struct
     
     
-    def view_min_en(self):
+    def view_min_en(self, save = True):
         '''
         Function to plot the protein structure founded whit less energy with matplotlib.
+        The plot can be saved with save = True as pdf
         '''
         x = [] # x coordinates of the monomers (ordered)
         y = [] # y coordinates of the monomers (ordered)
@@ -295,15 +303,22 @@ class Protein():
         ax.set_ylim(min(y)-6,max(y)+6)
         ax.grid(alpha=0.2)
         en = min(self.en_evo)
+        comp = Protein(seq=self.seq,struct=self.min_en_struct).compactness()
         string = f'Energy: {en}'
-        ax.text(0.01,0.99,string, ha='left', va='top', transform=ax.transAxes)
+        string_comp = f'Compactness: {comp/(max(self.comp_evo)+10e-15):.2f}'
+        ax.text(0.01,0.99, string, ha='left', va='top', transform=ax.transAxes)
+        ax.text(0.01,0.95, string_comp, ha='left', va='top', transform=ax.transAxes)
         ax.set_title('Min energy structure')
-        plt.show()
-        
-        
-    def view_max_comp(self):
+        plt.show(block=False)
+        if save:
+            plt.savefig("data/min_energy_view.pdf", format="pdf", bbox_inches="tight")
+
+             
+    def view_max_comp(self, save = True):
         '''
         Function to plot the protein structure founded whit the max compactness.
+        The plot can be saved with save = True as pdf
+
         '''
         x = [] # x coordinates of the monomers (ordered)
         y = [] # y coordinates of the monomers (ordered)
@@ -319,15 +334,22 @@ class Protein():
         ax.set_ylim(min(y)-6,max(y)+6)
         ax.grid(alpha=0.2)
         ax.set_title('Max compactness structure')
-        en = Protein.energy(Protein(seq=self.seq,struct=self.max_comp_struct))
+        en = Protein(seq=self.seq,struct=self.max_comp_struct).energy()
+        comp = max(self.comp_evo)
         string = f'Energy: {en}'
-        ax.text(0.01,0.99,string, ha='left', va='top', transform=ax.transAxes)
-        plt.show()
+        string_comp = f'Compactness: {comp/(max(self.comp_evo)+10e-15):.2f}'
+        ax.text(0.01,0.99, string, ha='left', va='top', transform=ax.transAxes)
+        ax.text(0.01,0.95, string_comp, ha='left', va='top', transform=ax.transAxes)
+        plt.show(block=False)
+        if save:
+            plt.savefig("data/max_compactness_view.pdf", format="pdf", bbox_inches="tight")
+
         
     
-    def plot_energy(self, avg :int = 1) -> None:
+    def plot_energy(self, avg : int = 1, save = True) -> None:
         '''
         plot the energy evolution of the system
+        The plot can be saved with save = True as pdf
 
         Parameters
         ----------
@@ -357,12 +379,15 @@ class Protein():
         ax_tw.tick_params(axis='y', labelcolor='r')
         ax_tw.plot(x, T, color = 'r')
         fig.tight_layout()
-        plt.show()
+        plt.show(block=False)
+        if save:
+            plt.savefig("data/energy_evolution.pdf", format="pdf", bbox_inches="tight")
         
         
-    def plot_compactness(self, avg :int = 1) -> None:
+    def plot_compactness(self, avg : int = 1, save = True) -> None:
         '''
         plot the compactness evolution of the system
+        The plot can be saved with save = True as pdf
 
         Parameters
         ----------
@@ -393,4 +418,6 @@ class Protein():
         ax_tw.tick_params(axis='y', labelcolor='r')
         ax_tw.plot(x, T, color = 'r')
         fig.tight_layout()
-        plt.show()
+        plt.show(block=False)
+        if save:
+            plt.savefig("data/compactness_evolution.pdf", format="pdf", bbox_inches="tight")

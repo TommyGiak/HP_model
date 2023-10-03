@@ -4,6 +4,7 @@ import time
 import configparser
 import argparse
 import json
+import matplotlib.pyplot as plt
 
 
 random.seed(0)
@@ -31,15 +32,17 @@ if use_struct:
 else:
     prot = Protein(seq)
 
-prot.view() # plot the structure of the protein
+prot.view(tit='Initial configuration') # plot the structure of the protein
 
 start = time.time() 
 
 prot.evolution(steps=folds) # evolve the protein with folds foldings
-prot.view() # plot the final structure of the protein
+prot.view(save=False, tit='Final configuration') # plot the final structure of the protein
 prot.view_min_en()
 prot.view_max_comp()
 prot.plot_energy(avg=10)
 prot.plot_compactness(avg=10)
+
+plt.show()
 
 print(f'It took {time.time()-start:.3f} seconds')
