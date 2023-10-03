@@ -118,7 +118,11 @@ class Protein():
         '''
         self.T.append(T) # initial temperature
         m = -1/steps # angolar coefficient for the annealing
+        print('Evolution started')
+
         for i in range(steps):
+            utils.progress_bar(i+1,steps) # print the progress bar of the evolution
+
             if annealing and T > 0.002 : T = m*(i - steps) # temperature decrease linearly w.r.t. the steps, if annealing is True
             en = self.energy() # current protein energy
             init_str = self.struct # current protein structure
@@ -141,6 +145,7 @@ class Protein():
                 self.max_comp_struct = self.struct
 
             self.T.append(T) # record the T evolution
+        print('Evolution ended')
     
     
     def energy(self, e = 1.) -> float:

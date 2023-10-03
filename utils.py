@@ -222,3 +222,29 @@ def hp_sequence_transform(seq : str) -> str :
             raise ValueError(f'Amino acids {amin} not recognized')
     
     return hp_seq
+
+
+def progress_bar(progress : int, total : int) -> None:
+    '''
+    Print a progress bar on terminal when used inside a loop.
+
+    Parameters
+    ----------
+    progress : int
+        Enumeration during the loop to take counts of the progress during the process.
+    total : int
+        Total number of steps for the evolution
+
+    Returns
+    -------
+    None
+        It only print on terminal the progress bar
+    '''
+    percentage = progress / float(total) * 100 
+    left = int(percentage/10) # number of  '#' to print (up to 10)
+    rigth = 10 - left # number of blank spaces to be included
+    bar = '[' + '#' * left + ' ' * rigth + ']' 
+    print(f'\r{bar} {percentage:.2f}%',end='')
+    if progress == total:
+        print(f'\r{bar} {percentage:.2f}%') # to have a newline after the process is finished
+
