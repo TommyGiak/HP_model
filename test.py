@@ -7,7 +7,13 @@ Created on Sat Aug 19 18:00:40 2023
 
 import protein_class as p
 import utils
+import configparser
 from math import isclose, sqrt
+
+configuration = configparser.ConfigParser()
+configuration.read('config.txt')
+
+config = utils.Configuration(configuration)
 
 
 correct_structures = [[[0, 0],[0, 1],[1, 1],[1, 2],[1, 3],[2, 3],[2, 2],
@@ -130,8 +136,12 @@ def test_energy_computation():
     '''
     Test the energy computation of the protein structures for two structures defined above.
     '''
-    prot1 = p.Protein(seq, correct_structures[0])
-    prot2 = p.Protein(seq, correct_structures[1])
+    prot1, prot2 = p.Protein(config), p.Protein(config)
+    prot1.seq = seq
+    prot1.struct = correct_structures[0]
+    prot2.seq = seq
+    prot2.struct = correct_structures[1]
+    prot1.n, prot2.n = len(seq), len(seq)
     assert isclose(prot1.energy(), -2.)
     assert isclose(prot2.energy(), -1.)
     
@@ -140,11 +150,17 @@ def test_get_neig():
     '''
     Test the get neighbors function using a hand made structure and a linear structure (which should not has neighbors)
     '''
-    prot1 = p.Protein(seq, correct_structures[0])
+    prot1 = p.Protein(config)
+    prot1.seq = seq
+    prot1.struct = correct_structures[0]
+    prot1.n = len(seq)
     neig = ['H','','P','H','','','H','P','','','','H','']
     for i in range(prot1.n):
         assert prot1.get_neig_of(i) == neig[i]
-    prot2 = p.Protein('HPHPHPHPPPPHHHHPPP')
+    prot2 = p.Protein(config)
+    prot2.seq = 'HPHPHPHPPPPHHHHPPP'
+    prot2.struct = utils.linear_struct(prot2.seq)
+    prot2.n = len(prot2.seq)
     for i in range(prot2.n):
         assert prot2.get_neig_of(i) == ''
         
@@ -159,12 +175,18 @@ def test_random_fold_valid_struc():
     '''
     n = 1000
     
-    prot1 = p.Protein(seq,correct_structures[0])
+    prot1 = p.Protein(config)
+    prot1.seq = seq
+    prot1.struct = correct_structures[0]
+    prot1.n = len(seq)
     for i in range(n):
         prot1.struct = prot1.random_fold()
         assert utils.is_valid_struct(prot1.struct)
         
-    prot2 = p.Protein('HPHPHPHPHPHHHHHPPHPHPHPPHHPPPPHHPP')
+    prot2 = p.Protein(config)
+    prot2.seq = 'HPHPHPHPHPHHHHHPPHPHPHPPHHPPPPHHPP'
+    prot2.struct = utils.linear_struct(prot2.seq)
+    prot2.n = len(prot2.seq)
     for i in range(n):
         prot2.struct = prot2.random_fold()
         assert utils.is_valid_struct(prot2.struct)

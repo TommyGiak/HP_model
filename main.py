@@ -3,11 +3,11 @@ import random
 import time
 import configparser
 import argparse
-import json
+import utils
 import matplotlib.pyplot as plt
 
 
-random.seed(0)
+random.seed(123) # random seed for replicability
 
 # Parser to get from terminal the configuration file
 parser = argparse.ArgumentParser()
@@ -18,31 +18,25 @@ args = parser.parse_args() # get the args written in the terminal
 filename = args.configuration_file # assign filename
 
 # setting the parameters from configuration file
-config = configparser.ConfigParser()
-config.read(filename)
+configuration = configparser.ConfigParser()
+configuration.read(filename)
 
-seq = config['SEQUENCE']['sequence'] # selected sequence
-folds = config['PROCESS'].getint('folding_steps') # number of folds
-use_struct = config['optional'].getboolean('use_structure') # if use the structure present in config file or use linear structure
+config = utils.Configuration(configuration) # class to get the save the configuration from the file
 
-if use_struct:
-    struct = config['optional']['structure']
-    struct = json.loads(struct)
-    prot = Protein(seq,struct=struct)
-else:
-    prot = Protein(seq)
+prot = Protein(config) # Protein class 
 
 prot.view(tit='Initial configuration') # plot the structure of the protein
 
 start = time.time() 
 
-prot.evolution(steps=folds) # evolve the protein with folds foldings
-prot.view(save=False, tit='Final configuration') # plot the final structure of the protein
+prot.evolution() # evolve the protein with folds foldings
+# various plots:
+prot.view(save=False, tit='Final configuration')
 prot.view_min_en()
 prot.view_max_comp()
 prot.plot_energy(avg=10)
 prot.plot_compactness(avg=10)
 
-plt.show()
-
 print(f'It took {time.time()-start:.3f} seconds')
+
+plt.show() # to let the let plots on screen at the end

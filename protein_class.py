@@ -8,59 +8,49 @@ import matplotlib.pyplot as plt
 import random
 import utils
 import math
-import time
 import numpy as np
 
 class Protein():
     '''
-    Protein class that contains: the sequence of the protein (Protein.seq), the length of the sequence 
-    (Protein.n) and the structure of the protein (Protein.struc). \n
-    When initialized it automatically check if the sequence and the structure are valid. The structure is optional. \n
+    Protein class that contains all the information on the protein and the function to makes the system evolve.\n
+    It takes as input the Configuration class present in the utils.py file.\n
     The protein sequence can be also coded in the 20 different amino acids (RNDQEHKSTACGILMFPWYV), in this case it will
-    be automatically converted into the HP sequence considering the polar and hydrophobic amino acids.
+    be automatically converted into the HP sequence considering the polar and hydrophobic amino acids,
+    but it must be setted in the configuration file given as input.
 
     Parameters
     ----------
-    seq : str
-        Is a string of H and P of any length, if the sequence contains the 20 different amino-acids, it will be converted to HP sequences. It is caps sensitive! 
-        So use upper case letters.
-    struct : list, optional
-        List containing the x and y coordinate of every monomer of the protein as INTEGER, 
-        the number of element must be the same of the length of the sequence.\n
-        The protein is assumed to move in a 2D lattice.\n
-        EXAMPLE of length 6: [[0,0],[0,1],[1,1],[1,2],[1,3],[2,3]].\n
-        By default (if nothing is inserted) a linear structure is assumed.
-
-    Raises
-    ------
-    AssertionError
-        If the sequence or structure are not valid or are not of compatible lengths.
+    config : utils.Configuration
+        Configuration class already assigned using the selected input file.
     '''
-    def __init__(self, seq : str, struct : list = None):
+
+    def __init__(self, config : utils.Configuration) -> None:
         
-        if utils.is_valid_sequence(seq): # check that the sequence is valid (contains only HP)
-            self.seq = seq
+        if utils.is_valid_sequence(config.seq): # check that the sequence is valid (contains only HP)
+            self.seq = config.seq
         else:
-            self.seq = utils.hp_sequence_transform(seq) # if the sequence include the 20 different amino acids it will be coded in HP only
+            self.seq = utils.hp_sequence_transform(config.seq) # if the sequence include the 20 different amino acids it will be coded in HP only
             print('\033[42mThe sequence was converted into binary configuration -> ', self.seq, '\033[0;0m')
 
-        self.n = len(seq) # length of the sequence
+        self.n = len(config.seq) # length of the sequence
         
-        if struct is None: # linear structur assumed if struct is not specified as input
-            self.struct = []
-            for i in range(self.n):
-                self.struct.append([i,0])
-            print('\033[43mLinear initial structure assumed \033[0;0m')
+        if not config.use_struct: # linear structur assumed if struct is not specified as input
+            self.struct = utils.linear_struct(self.seq)
         else:
             try: # check that sequence has the right length
-                assert len(struct) == self.n
+                assert len(config.struct) == self.n
             except:
                 raise AssertionError('The lengths of the sequence and the structure are not the same')
-            self.struct = struct
+            self.struct = config.struct
         
         if not utils.is_valid_struct(self.struct): # check that the sequence is valid
             raise AssertionError('The structure is not a self avoid walk (SAW) or the distances between consecutive points are different from 1')
         
+        # parameters setting
+        self.annealing = config.annealing
+        self.T_in = config.T
+        self.steps = config.folds
+
         self.min_en_struct = self.struct # variable to record the min energy structure (for now is the only structure)
         self.en_evo = [self.energy()] # list to keep track of the energy evolution
         self.T = [] # list to keep track of the temperature evolution
@@ -93,7 +83,7 @@ class Protein():
         en = self.energy()
         comp = self.compactness()
         string = f'Energy: {en}'
-        string_comp = f'Compactness: {comp/(max(self.comp_evo)+10e-15):.2f}'
+        string_comp = f'Compactness: {comp/(max(self.comp_evo)+10e-15):.2f}' # the +10e-15 is used for numerical stability (avoid division by 0)
         ax.text(0.01,0.99, string, ha='left', va='top', transform=ax.transAxes)
         ax.text(0.01,0.95, string_comp, ha='left', va='top', transform=ax.transAxes)
         plt.show(block=False)
@@ -101,36 +91,30 @@ class Protein():
             plt.savefig("data/prot_view.pdf", format="pdf", bbox_inches="tight")
 
         
-    def evolution(self, annealing : bool = True, T : float = 1., steps : int = 10000):
+    def evolution(self):
         '''
         Let the system evolving for a certain number of steps. 
         New structures are accepted following the Metropolis algorithm (this function basically apply the Metropolis alg).\n
-        The temperature can be controlled.\n
+        All the parameters are taken from the initial configuration.\n
         The energy evolution values, min energy structure and compactness conformations are saved.
 
         Parameters
         ----------
-        annealing : bool, optional
-            If True, the temperature will slowly decrease as the steps increases.
-            If False the temperature will remain constant during all the evolution.
-            The default is True.
-        T : float, optional
-            Temperature of the enviroment. The default is 0.5.
-        steps : int, optional
-            Number protein folds. The default is 10000.
+        None.
 
         Returns
         -------
         None.
         '''
+        T = self.T_in
         self.T.append(T) # initial temperature
-        m = -1/steps # angolar coefficient for the annealing
+        m = -1/self.steps # angolar coefficient for the annealing
         print('Evolution started')
 
-        for i in range(steps):
-            utils.progress_bar(i+1,steps) # print the progress bar of the evolution
+        for i in range(self.steps):
+            utils.progress_bar(i+1,self.steps) # print the progress bar of the evolution
 
-            if annealing and T > 0.002 : T = m*(i - steps) # temperature decrease linearly w.r.t. the steps, if annealing is True
+            if self.annealing and T > 0.002 : T = m*(i - self.steps) # temperature decrease linearly w.r.t. the steps, if annealing is True
             en = self.energy() # current protein energy
             init_str = self.struct # current protein structure
             self.struct = self.random_fold() # new structure is generated
@@ -141,7 +125,7 @@ class Protein():
                 r = random.uniform(0, 1)
                 p = math.exp(-d_en/T) # probability to accept the new structure
                 if r > p:
-                    self.struct = init_str
+                    self.struct = init_str # the new structure is not accepted (overwrite the initial structure)
                     
             if new_en < min(self.en_evo): # to save the min enrergy and structure
                 self.min_en_struct = self.struct
@@ -184,7 +168,9 @@ class Protein():
     def compactness(self) -> int:
         '''
         Function to compute the compactness of the structure.
-        The compactness is the total number of neighbours of each monomer (backbone excluded).
+        The compactness is the total number of neighbours of each monomer (backbone excluded).\n
+        The return is twice the number of neighbours, but since the compactness is then normalized by its maximum value,
+        is not necessary to divide by two
 
         Parameters
         ----------
@@ -192,7 +178,8 @@ class Protein():
 
         Returns
         -------
-        None
+        int :
+            The total number of neighbours counted (doubled)
         '''
         count_neig = 0 
         
@@ -303,9 +290,9 @@ class Protein():
         ax.set_ylim(min(y)-6,max(y)+6)
         ax.grid(alpha=0.2)
         en = min(self.en_evo)
-        comp = Protein(seq=self.seq,struct=self.min_en_struct).compactness()
+        comp = self.comp_evo[self.en_evo.index(en)]
         string = f'Energy: {en}'
-        string_comp = f'Compactness: {comp/(max(self.comp_evo)+10e-15):.2f}'
+        string_comp = f'Compactness: {comp/(max(self.comp_evo)+10e-15):.2f}' # + 10e-15 for numerical stability (avoid division by 0)
         ax.text(0.01,0.99, string, ha='left', va='top', transform=ax.transAxes)
         ax.text(0.01,0.95, string_comp, ha='left', va='top', transform=ax.transAxes)
         ax.set_title('Min energy structure')
@@ -334,10 +321,10 @@ class Protein():
         ax.set_ylim(min(y)-6,max(y)+6)
         ax.grid(alpha=0.2)
         ax.set_title('Max compactness structure')
-        en = Protein(seq=self.seq,struct=self.max_comp_struct).energy()
         comp = max(self.comp_evo)
+        en = self.en_evo[self.comp_evo.index(comp)]
         string = f'Energy: {en}'
-        string_comp = f'Compactness: {comp/(max(self.comp_evo)+10e-15):.2f}'
+        string_comp = f'Compactness: {comp/(max(self.comp_evo)+10e-15):.2f}' # the +10e-15 is used for numerical stability (avoid division by 0)
         ax.text(0.01,0.99, string, ha='left', va='top', transform=ax.transAxes)
         ax.text(0.01,0.95, string_comp, ha='left', va='top', transform=ax.transAxes)
         plt.show(block=False)

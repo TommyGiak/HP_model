@@ -6,6 +6,7 @@ Created on Mon Aug 21 15:14:08 2023
 """
 from math import sqrt, isclose
 import random
+import json
 
 
 def is_valid_struct(struct : list) -> bool:
@@ -67,7 +68,31 @@ def is_valid_sequence(seq : str) -> bool:
     else:
         return False
     
+
+def linear_struct(seq : str) -> list:
+    '''
+    Create the linear structure of the length of the input sequence
+
+    Parameters
+    ----------
+    seq : str
+        Sequence which need a linear structure
     
+    Returns
+    -------
+    list : 
+        Linear structure
+    '''
+    struct = []
+
+    for i in range(len(seq)):
+        struct.append([i,0])
+
+    print('\033[43mLinear initial structure assumed \033[0;0m')
+    
+    return struct
+
+
 def get_dist(coord1 : list, coord2 : list) -> float:
     '''
     Compute the distance of two points in the lattice
@@ -248,3 +273,27 @@ def progress_bar(progress : int, total : int) -> None:
     if progress == total:
         print(f'\r{bar} {percentage:.2f}%') # to have a newline after the process is finished
 
+
+class Configuration():
+    '''
+    Class to save and ordinate the parameters given in the input file.
+
+    Parameters
+    ----------
+    config : ConfigParser
+        ConfigParser of the desired input file.
+
+    Returns
+    -------
+    None.
+    '''
+
+    def __init__(self, config) -> None:
+        self.seq = config['SEQUENCE']['sequence'] # selected sequence
+        self.folds = config['PROCESS'].getint('folding_steps') # number of folds
+        self.use_struct = config['optional'].getboolean('use_structure') # if use the structure present in config file or use linear structure
+        self.annealing = config['optional'].getboolean('annealing') # if use annealing or not
+        self.T = config['optional'].getfloat('T') # starting temperature
+        if self.use_struct:
+            struct = config['optional']['structure'] # structure if TRUE in input file
+            self.struct = json.loads(struct)
