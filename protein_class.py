@@ -5,6 +5,7 @@ Created on Sat Aug 19 15:54:27 2023
 @author: Tommaso Giacometti
 """
 import matplotlib.pyplot as plt
+from matplotlib.animation import PillowWriter
 import random
 import utils
 import math
@@ -50,6 +51,8 @@ class Protein():
         self.annealing = config.annealing
         self.T_in = config.T
         self.steps = config.folds
+        self.gif = config.gif
+        self.gif_struct = []
 
         self.min_en_struct = self.struct # variable to record the min energy structure (for now is the only structure)
         self.en_evo = [self.energy()] # list to keep track of the energy evolution
@@ -109,7 +112,7 @@ class Protein():
         T = self.T_in
         self.T.append(T) # initial temperature
         m = -T/self.steps # angolar coefficient for the annealing
-        print('Evolution started')
+        print('Evolution started...')
 
         for i in range(self.steps):
             utils.progress_bar(i+1,self.steps) # print the progress bar of the evolution
@@ -136,6 +139,11 @@ class Protein():
                 self.max_comp_struct = self.struct
 
             self.T.append(T) # record the T evolution
+
+            if self.gif:
+                if i%(int(self.steps/100)) == 0:
+                    self.gif_struct.append(self.struct)
+
         print('Evolution ended')
     
     
@@ -408,3 +416,35 @@ class Protein():
         plt.show(block=False)
         if save:
             plt.savefig("data/compactness_evolution.pdf", format="pdf", bbox_inches="tight")
+
+    
+    def create_gif(self):
+        
+        print('Creating gif...')
+
+        fig, ax = plt.subplots()
+
+        writer =  PillowWriter(fps=5)
+
+        with writer.saving(fig, 'data/evo.gif', 200):
+
+            for i,structure in enumerate(self.gif_struct):
+                utils.progress_bar(i+1, len(self.gif_struct))
+
+                x = []
+                y = []
+
+                for i in range(self.n):
+                    x.append(structure[i][0])
+                    y.append(structure[i][1])
+                ax.plot(x,y, alpha = 0.5)
+                for i, coord in enumerate(structure):
+                    ax.scatter(x[i], y[i], marker='$'+self.seq[i]+'$', s=20, color = 'red')
+                ax.set_xlim(min(x)-6,max(x)+6)
+                ax.set_ylim(min(y)-6,max(y)+6)
+                ax.grid(alpha=0.2)
+
+                writer.grab_frame()
+                ax.clear()
+        
+        print('Gif created')

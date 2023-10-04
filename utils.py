@@ -297,3 +297,4 @@ class Configuration():
         if self.use_struct:
             struct = config['optional']['structure'] # structure if TRUE in input file
             self.struct = json.loads(struct)
+        self.gif = config['optional'].getboolean('create_gif')

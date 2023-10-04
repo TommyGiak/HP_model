@@ -40,3 +40,6 @@ prot.plot_compactness(avg=10)
 print(f'It took {time.time()-start:.3f} seconds')
 
 plt.show() # to let the let plots on screen at the end
+
+if config.gif:
+    prot.create_gif()
