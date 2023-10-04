@@ -1,8 +1,8 @@
 # HP model for protein folding
 
-In my project I will implement in Python the HP model for protein folding.
+In this project I implemented in Python the HP model for protein folding.
 The HP model is a simply model that can help to understand basic folding behaviours using Monte Carlo simulation over the free energy of the bounds using only two category of aminoacids, H (hydrophobic) and P (polar) ([click here for more info](https://pubs.acs.org/doi/10.1021/ma00200a030)).\
-I want to create a command line application that can take the sequence of a protein (even with the 20 distinct aminoacids) and can run a HP model simulation of the folding process of the protein at given temperatures using, optionally, annealing algorithms and giving as outputs the energy evolution of the system, the structure of the protein the native structure energy and the compactness.\
+I created a command line application that can take the sequence of a protein (even with the 20 distinct aminoacids) and can run a HP model simulation of the folding process of the protein at given temperatures using, optionally, annealing algorithms and giving as outputs the energy evolution of the system, the structure of the protein the native structure energy (or the minimum energy configuration founded) and the compactness.\
 This project can be used to have a first impact of the behaviour of a protein and can be used to study the transitions to native states of proteins as function of temperature and bounding energy. Can be also done different test and comparison, for example seeing the different behaviours of similar proteins when two random adjacent aminoacids are switched.
 
 ## Run the code

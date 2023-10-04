@@ -108,7 +108,7 @@ class Protein():
         '''
         T = self.T_in
         self.T.append(T) # initial temperature
-        m = -1/self.steps # angolar coefficient for the annealing
+        m = -T/self.steps # angolar coefficient for the annealing
         print('Evolution started')
 
         for i in range(self.steps):
