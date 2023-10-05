@@ -7,6 +7,7 @@ import protein_class as p
 import utils
 import configparser
 from math import isclose, sqrt
+import hypothesis
 
 configuration = configparser.ConfigParser()
 configuration.read('config.txt')
@@ -33,7 +34,7 @@ correct_structures = [[[0, 0],[0, 1],[1, 1],[1, 2],[1, 3],[2, 3],[2, 2],
                       [[0,0],[1,0],[2,0],[2,1]]]
 
 seq = 'HPPHHPHPHPHHP'
-seq1 = 'MAGIIKKQILKHLSRFTKNLSPDKINLSTLKGEGELKNLELDEEVLQNMLDLPTWLAINK'
+seq1 = 'HHHPHPHPPPPPHPHPHPHHPHHPHPHHPHPPH'
 seq2 = 'VFCNKASIRIPWTKLKTHPICLSLDKVIMEMSTCEEPRSPFAEK'
 seq3 = 'VVEGISVSVNSIVIRIGAKAFNASFELSQLRIYSVNAHWEHGDLRFTRIQDPQRGEV'
 seq4 = 'DLMSVVVFKITGVNGEIDIRGEDTEICLQVNQVTPDQLGNISLRHYLCNRPVGSDQKAVATVMPMKIQVSNTKINLKDDSPRSSTVSLEPAPVTVHIDHLVVERSDDGSFHIRDSHMLNTGNDLKENVKSDSV'
@@ -292,4 +293,76 @@ def test_hp_sequence_transform_lenght():
     assert len(utils.hp_sequence_transform(seq3)) == len(seq3)
     assert len(utils.hp_sequence_transform(seq4)) == len(seq4)
     assert len(utils.hp_sequence_transform(seq5)) == len(seq5)
+
+
+def test_evolution_minimize_energy():
+    '''
+    Test that the evolution of the protein takes to a minimization of the energy. 
+    The energy should never be grater than zero
     
+    GIVEN: a list of random sequences
+    WHEN: I evolve the system for a certain number of steps
+    THEN: I expect that the energy of the protein decrease (or remain equal to zero)
+    '''
+    # definition of the protein to test
+    prot1, prot2, prot3 = p.Protein(config), p.Protein(config), p.Protein(config)
+    prot1.seq, prot2.seq, prot3.seq = seq, seq1, seq2
+    prot1.struct = utils.linear_struct(prot1.seq)
+    prot2.struct = utils.linear_struct(prot2.seq)
+    prot3.struct = utils.linear_struct(prot3.seq)
+    prot1.n, prot2.n, prot3.n = len(seq), len(seq1), len(seq2)
+
+    prot1.steps, prot2.steps, prot3.steps = 500, 500, 500
+
+    en1, en2, en3 = prot1.energy(), prot2.energy(), prot3.energy()
+
+    # energy shoud be zero for the linear structure
+    assert isclose(en1,0.)
+    assert isclose(en2,0.)
+    assert isclose(en3,0.)
+
+    # evolitions
+    prot1.evolution()
+    prot2.evolution()
+    prot3.evolution()
+
+    # asserts for the energy minimization after the evolution (energy shoul not be grater than zero)
+    assert prot1.energy() <= en1
+    assert prot2.energy() <= en2
+    assert prot3.energy() <= en3
+
+
+def test_evolution_maximize_compactness():
+    '''
+    Test that the evolution of the protein takes does not takes the compactness below zero. 
+    
+    GIVEN: a list of random sequences
+    WHEN: I evolve the system for a certain number of steps
+    THEN: I expect that the compactness of the protein never goes below zero
+    '''
+    # definition of the protein to test
+    prot1, prot2, prot3 = p.Protein(config), p.Protein(config), p.Protein(config)
+    prot1.seq, prot2.seq, prot3.seq = seq, seq1, seq2
+    prot1.struct = utils.linear_struct(prot1.seq)
+    prot2.struct = utils.linear_struct(prot2.seq)
+    prot3.struct = utils.linear_struct(prot3.seq)
+    prot1.n, prot2.n, prot3.n = len(seq), len(seq1), len(seq2)
+
+    prot1.steps, prot2.steps, prot3.steps = 500, 500, 500
+
+    comp1, comp2, comp3 = prot1.compactness(), prot2.compactness(), prot3.compactness()
+
+    # energy shoud be zero for the linear structure
+    assert isclose(comp1,0.)
+    assert isclose(comp2,0.)
+    assert isclose(comp3,0.)
+
+    # evolitions
+    prot1.evolution()
+    prot2.evolution()
+    prot3.evolution()
+
+    # asserts for the energy minimization after the evolution (energy shoul not be grater than zero)
+    assert prot1.compactness() >= comp1
+    assert prot2.compactness() >= comp2
+    assert prot3.compactness() >= comp3
