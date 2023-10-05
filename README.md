@@ -5,9 +5,21 @@ The HP model is a simply model that can help to understand basic folding behavio
 I created a command line application that can take the sequence of a protein (even with the 20 distinct aminoacids) and can run a HP model simulation of the folding process of the protein at given temperatures using, optionally, annealing algorithms and giving as outputs the energy evolution of the system, the structure of the protein the native structure energy (or the minimum energy configuration founded) and the compactness.\
 This project can be used to have a first impact of the behaviour of a protein and can be used to study the transitions to native states of proteins as function of temperature and bounding energy. Can be also done different test and comparison, for example seeing the different behaviours of similar proteins when two random adjacent aminoacids are switched.
 
-## Run the code
+## Table of contents
+1. [Install and run the code](https://github.com/TommyGiak/HP_model#install-and-run-the-code)
+2. [Parameters setting](https://github.com/TommyGiak/HP_model#parameters-setting)
+    1. [Insert the protein sequence](https://github.com/TommyGiak/HP_model#insert-the-protein-sequence)
+    2. [Change the number of folding steps](https://github.com/TommyGiak/HP_model#change-the-number-of-folding-steps)
+    3. [All the other parameters](https://github.com/TommyGiak/HP_model#all-the-other-parameters)
+    4. [Create a personalized configuration file](https://github.com/TommyGiak/HP_model#create-a-personalized-configuration-file)
+3. [Repository structure](https://github.com/TommyGiak/HP_model#repository-structure)
+4. [Algorithm for the protein structure](https://github.com/TommyGiak/HP_model#algorithm-for-the-protein-structure)
+5. [Acceptance of the structure](https://github.com/TommyGiak/HP_model#acceptance-of-the-structure)
+6. [Execution example](https://github.com/TommyGiak/HP_model#execution-example)
 
-From the _terminal_ create an empty folder and clone this repository using the following command:
+## Install and run the code
+
+From _terminal_ move into the desired folder and clone this repository using the following command:
 
 ```shell
 git clone https://github.com/TommyGiak/HP_model.git
@@ -19,14 +31,19 @@ Once the github repository is cloned use the following command to run the script
 python main.py
 ```
 
-the default configuration file is _config.txt_ where can be setted the parameters look [here](https://github.com/TommyGiak/HP_model#parameters-setting).\
-To use a specific configuration file use:
+the default configuration file is _config.txt_. Of course all the parameters can be setted, for further instruction look at the following [paragraph](https://github.com/TommyGiak/HP_model#parameters-setting).\
+To use a specific configuration file, instead, use:
 
 ```shell
 python main.py <filename>
 ```
 
-To create a personalized configuration file look [here](https://github.com/TommyGiak/HP_model#create-a-personalized-configuration-file)
+To create a personalized configuration file look [here](https://github.com/TommyGiak/HP_model#create-a-personalized-configuration-file)\
+The requirement to run this application are:
+
+- [python 3](https://www.python.org)
+- [numpy](https://numpy.org)
+- [matplotlib](https://matplotlib.org)
 
 ## Parameters setting
 
@@ -34,28 +51,41 @@ To change the protein sequence, the structure and the other parameters you can m
 
 ### Insert the protein sequence
 
-The protein sequence can be written in the _config.txt_ file at the _sequence_ variable. The sequence is caps sensitive so the letters must be upper case only. The sequence doesn't need the quotation marks " or ' .
+The protein sequence can be written in the _config.txt_ file at the _sequence_ variable. The sequence is caps sensitive so the letters must be upper case only. The sequence doesn't need the quotation marks " or ' .\
+This sequence can be already given as H/P only monomers (hydrophobic or polar) or with the 20 different amino-acids coded upper case, is this case the sequence will be converted to H/P.
 
 ### Change the number of folding steps
 
 The number of folding steps can be setted in the _config.txt_ file at the _folding\_step_ variable.
 
+### All the others parameters
+
+The other options are:
+
+- choosing if use annealing algorithm or not, setting _annealing_ TRUE or FALSE.
+- using a specific initial structure for the protein, setting _use_structure_ TRUE and inserting a correct structure in _structure_
+- set the initial temperature, using the variable _T_. If the variable _annealing_ is TRUE the temperature decreases linearly to zero during the evolution of the protein, in the other case the temperature remains constant.
+- create or not the gif of the process at the and of the evolution, using the variable _create_gif_ TRUE or FALSE.
+
 ### Create a personalized configuration file
 
-To create a personalized configuration file you can just copy the sintax of the _config.txt_ changing the parameters as you prefer. To use it in the simulation follow the instruction [here](https://github.com/TommyGiak/HP_model#run-the-code).
+To create a personalized configuration file you can just copy the sintax of the _config.txt_ changing the parameters as you prefer. To use it in the simulation follow the instruction [here](https://github.com/TommyGiak/HP_model#install-and-run-the-code).\
+The new configuration file can have any extension.
 
 ## Repository strurcture
 
-Up to now the repository contain three pyhton files: _protein_class.py_, _utils.py_, _test.py_.
+The repository contain these pyhton files:
 
-- _main.py_: run the scripts
-- _protein_class.py_: contain a class named `Protein` which contains and save the protein information and implement all the main function for the evolution of the system, including the plot functions.
-- _utils.py_: contain different functions to validate the structures of the proteins and to support the evolution of the protein.
-- _test.py_: contain the test functions to test all the code.
+- _main.py_: runs the evolution and save the results in the _/data_ folder
+- _protein_class.py_: contains a class named `Protein` which contains and save the protein information and implement all the main function for the evolution of the system
+- _utils.py_: contains different functions to validate the structures of the proteins and to support the evolution of the protein, including reordering of the input file configurations
+- _plots.py_: contains funtion to plot the results
+- _test.py_: contains the test functions to test the code
+- _config.txt_: contains the information needed by the program as input
 
 ## Algorithm for the protein folding
 
-The algorithm for the protein folding is implemented in the `Protein` class in the _protein_class.py_ file, plus the function `diagonal_move` and `tail_fold` in the _utils.py_ file.\
+The algorithm for the protein folding is implemented in the `Protein` class in the _protein_class.py_ file, with the support of some more generic function in the _utils.py_ file.\
 Each folding step involve the following steps:
 
 1. choose a random monomer in the protein: a random integer from $0$ to $l-1$ where $l$ is the lenght of the protein sequence. The sampled monomer will be the starting point for the movement of the protein.
@@ -65,7 +95,7 @@ Each folding step involve the following steps:
 
 ## Acceptance of the structure
 
-Once a new structure is generated by a folding step, the energy of this new structure is computed to accept it following the Metropolis algorithm.\
+Once a new structure is generated by a folding step, the energy of this new structure is computed and the acception follows the Metropolis algorithm.\
 If the energy of the new protein structure is less than the previous one, the new structure is always accepted, if instead the energy is grater the new structure is accepted with probability:
 
 ```math
