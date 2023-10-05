@@ -38,7 +38,7 @@ def view(protein : Protein, save = True, tit = None):
     ax.text(0.01,0.95, string_comp, ha='left', va='top', transform=ax.transAxes)
     plt.show(block=False)
     if save:
-        plt.savefig("data/prot_view.pdf", format="pdf", bbox_inches="tight")
+        plt.savefig("data/prot_view.png", format="png", bbox_inches="tight", dpi = 200)
 
 
 def view_min_en(protein, save = True):
@@ -69,7 +69,7 @@ def view_min_en(protein, save = True):
     ax.set_title('Min energy structure')
     plt.show(block=False)
     if save:
-        plt.savefig("data/min_energy_view.pdf", format="pdf", bbox_inches="tight")
+        plt.savefig("data/min_energy_view.png", format="png", bbox_inches="tight", dpi = 200)
 
             
 def view_max_comp(protein, save = True):
@@ -101,7 +101,7 @@ def view_max_comp(protein, save = True):
     ax.text(0.01,0.95, string_comp, ha='left', va='top', transform=ax.transAxes)
     plt.show(block=False)
     if save:
-        plt.savefig("data/max_compactness_view.pdf", format="pdf", bbox_inches="tight")
+        plt.savefig("data/max_compactness_view.png", format="png", bbox_inches="tight", dpi = 200)
 
     
 
@@ -141,7 +141,7 @@ def plot_energy(protein, avg : int = 1, save = True) -> None:
     fig.tight_layout()
     plt.show(block=False)
     if save:
-        plt.savefig("data/energy_evolution.pdf", format="pdf", bbox_inches="tight")
+        plt.savefig("data/energy_evolution.png", format="png", bbox_inches="tight", dpi = 200)
     
     
 def plot_compactness(protein, avg : int = 1, save = True) -> None:
@@ -181,7 +181,7 @@ def plot_compactness(protein, avg : int = 1, save = True) -> None:
     fig.tight_layout()
     plt.show(block=False)
     if save:
-        plt.savefig("data/compactness_evolution.pdf", format="pdf", bbox_inches="tight")
+        plt.savefig("data/compactness_evolution.png", format="png", bbox_inches="tight", dpi = 200)
 
 
 def create_gif(protein):
