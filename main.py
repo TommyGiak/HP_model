@@ -9,6 +9,7 @@ import configparser
 import argparse
 import utils
 import matplotlib.pyplot as plt
+import plots
 
 
 random.seed(123) # random seed for replicability
@@ -29,21 +30,21 @@ config = utils.Configuration(configuration) # class to get the save the configur
 
 prot = Protein(config) # Protein class 
 
-prot.view(tit='Initial configuration') # plot the structure of the protein
+plots.view(protein=prot, tit='Initial configuration') # plot the structure of the protein
 
 start = time.time() 
 
 prot.evolution() # evolve the protein with folds foldings
 # various plots:
-prot.view(save=False, tit='Final configuration')
-prot.view_min_en()
-prot.view_max_comp()
-prot.plot_energy(avg=10)
-prot.plot_compactness(avg=10)
+plots.view(protein=prot, save=False, tit='Final configuration')
+plots.view_min_en(protein=prot)
+plots.view_max_comp(protein=prot)
+plots.plot_energy(protein=prot, avg=10)
+plots.plot_compactness(protein=prot, avg=10)
 
 print(f'It took {time.time()-start:.3f} seconds')
 
 plt.show() # to let the let plots on screen at the end
 
 if config.gif:
-    prot.create_gif()
+    plots.create_gif(protein=prot)
