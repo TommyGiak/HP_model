@@ -78,25 +78,25 @@ where $\Delta E > 0$.
 
 As example I used a simulation for a the protein sequence of Myoglobin (Camelus dromedarius) taken from [here](https://www.ncbi.nlm.nih.gov/protein/KAB1270346.1?report=fasta).
 I simulated 100000 folding steps as indicated in the _config.txt_ file.
-I started the simulation with $T = 2.0$ and I used annealing.
-The whole process took $\sim 12  min$, a quite long time since the protein il quite long as the folding steps.\
-The results are present also in the data folder, anyway, starting with a linear structure, i obtained the following results:
+I started the simulation with $T = 2.0$ and I used annealing.\
+The whole process took $\sim 12$ min, a quite long time since the protein il quite long as the folding steps.\
+The results are present also in the [data folder](https://github.com/TommyGiak/HP_model/tree/main/data), anyway, starting with a linear structure, i obtained the following results:
 
 - energy minimum:
-<img src="./data/min_energy_view.png" alt="energy minimum" width="400"/>
+<img src="./data/min_energy_view.png" alt="energy minimum" width="450"/>
 
 - compactness maximum:
-<img src="./data/max_compactness_view.png" alt="compactness maximum" width="400"/>
+<img src="./data/max_compactness_view.png" alt="compactness maximum" width="450"/>
 
 - evolution process:
-<img src="./data/evo.gif" alt="evolution" width="400"/>
+<img src="./data/evo.gif" alt="evolution" width="450"/>
 
 - energy evolution profile:
-<img src="./data/energy_evolution.png" alt="energy evolution" width="400"/>
+<img src="./data/energy_evolution.png" alt="energy evolution" width="450"/>
 
 - compactness evolution profile:
-<img src="./data/compactness_evolution.png" alt="compactness evolution" width="400"/>
+<img src="./data/compactness_evolution.png" alt="compactness evolution" width="450"/>
 
-It is easy to see from the plots how the energy and the compactness stabilize when the temperature $T$ reach $\sim 0.5$.
+It is easy to see from the plots how the energy and the compactness stabilize when the temperature $T$ reach $\sim0.5$.
 To notice also that lowest energy does not correspond to highest compactness.
 
