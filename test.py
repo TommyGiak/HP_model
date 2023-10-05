@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat Aug 19 18:00:40 2023
-
 @author: Tommaso Giacometti
 """
 

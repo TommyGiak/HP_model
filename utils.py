@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Aug 21 15:14:08 2023
-
 @author: Tommaso Giacometti
 """
 from math import sqrt, isclose

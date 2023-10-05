@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+"""
+@author: Tommaso Giacometti
+"""
 from protein_class import Protein
 import random
 import time

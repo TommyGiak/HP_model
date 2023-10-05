@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat Aug 19 15:54:27 2023
-
 @author: Tommaso Giacometti
 """
 import matplotlib.pyplot as plt
@@ -112,6 +110,7 @@ class Protein():
         T = self.T_in
         self.T.append(T) # initial temperature
         m = -T/self.steps # angolar coefficient for the annealing
+        print('--------------------')
         print('Evolution started...')
 
         for i in range(self.steps):
@@ -145,6 +144,7 @@ class Protein():
                     self.gif_struct.append(self.struct)
 
         print('Evolution ended')
+        print('---------------')
     
     
     def energy(self, e = 1.) -> float:
@@ -419,7 +419,13 @@ class Protein():
 
     
     def create_gif(self):
-        
+        '''
+        Function to create a gif of the evolution process.\n
+        The gif will have more o less 100 frames with fps = 5.
+        The gif will not be visible with the other plots but it will be saved in the /data folder.\n
+        To control the creation or not of the gif you can set TRUE or FALSE for the variable 'create_gif' in the configuration file.
+        '''
+        print('---------------')
         print('Creating gif...')
 
         fig, ax = plt.subplots()
@@ -448,3 +454,4 @@ class Protein():
                 ax.clear()
         
         print('Gif created')
+        print('-----------')
