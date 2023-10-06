@@ -14,7 +14,7 @@ This project can be used to have a first impact of the behaviour of a protein an
     4. [Create a personalized configuration file](https://github.com/TommyGiak/HP_model#create-a-personalized-configuration-file)
 3. [Repository structure](https://github.com/TommyGiak/HP_model#repository-structure)
 4. [Some theory](https://github.com/TommyGiak/HP_model#some-theory)
-    1. [Algorithm for the protein structure](https://github.com/TommyGiak/HP_model#algorithm-for-the-protein-structure)
+    1. [Algorithm for the protein folding](https://github.com/TommyGiak/HP_model#algorithm-for-the-protein-folding)
     2. [Acceptance of the structure](https://github.com/TommyGiak/HP_model#acceptance-of-the-structure)
 5. [Execution example](https://github.com/TommyGiak/HP_model#execution-example)
 
@@ -59,7 +59,7 @@ This sequence can be already given as H/P only monomers (hydrophobic or polar) o
 
 The number of folding steps can be setted in the _config.txt_ file at the _folding\_step_ variable.
 
-### All the others parameters
+### All the other parameters
 
 The other options are:
 
@@ -73,7 +73,7 @@ The other options are:
 To create a personalized configuration file you can just copy the syntax of the _config.txt_ changing the parameters as you prefer. To use it in the simulation follow the instruction [here](https://github.com/TommyGiak/HP_model#install-and-run-the-code).\
 The new configuration file can have any extension.
 
-## Repository strurcture
+## Repository structure
 
 The repository contain these pyhton files:
 
