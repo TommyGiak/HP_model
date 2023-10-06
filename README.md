@@ -1,7 +1,7 @@
 # HP model for protein folding
 
 In this project I implemented in Python the HP model for protein folding.
-The HP model is a simple model that can help to understand basic folding behaviours of proteins using Monte Carlo simulation over the free energy of the bounds. It approximate the protein sequence with only two category of aminoacids, H (hydrophobic) and P (polar) ([click here for more info](https://pubs.acs.org/doi/10.1021/ma00200a030)).\
+The HP model is a simple model that can help to understand basic folding behaviours of proteins using Monte Carlo simulation over the free energy of the bounds. It approximate the protein sequence with only two category of aminoacids, H (hydrophobic) and P (polar). For more info look at [this](https://pubs.acs.org/doi/10.1021/ma00200a030) paper or at the [paragraph](https://github.com/TommyGiak/HP_model#some-theory) below.\
 I created a command line application that can take the sequence of a protein (even with the 20 distinct aminoacids) and can run a HP model simulation of the folding process of the protein at given temperatures using, optionally, annealing algorithms and giving as outputs the energy evolution of the system, the structure of the protein the native structure energy (or the minimum energy configuration founded) and the compactness.\
 This project can be used to have a first impact of the behaviour of a protein and can be used to study the transitions to native states of proteins as function of temperature and bounding energy. Can be also done different test and comparison, for example seeing the different behaviours of similar proteins when two random adjacent aminoacids are switched.
 
@@ -13,9 +13,11 @@ This project can be used to have a first impact of the behaviour of a protein an
     3. [All the other parameters](https://github.com/TommyGiak/HP_model#all-the-other-parameters)
     4. [Create a personalized configuration file](https://github.com/TommyGiak/HP_model#create-a-personalized-configuration-file)
 3. [Repository structure](https://github.com/TommyGiak/HP_model#repository-structure)
-4. [Algorithm for the protein structure](https://github.com/TommyGiak/HP_model#algorithm-for-the-protein-structure)
-5. [Acceptance of the structure](https://github.com/TommyGiak/HP_model#acceptance-of-the-structure)
-6. [Execution example](https://github.com/TommyGiak/HP_model#execution-example)
+4. [Some theory](https://github.com/TommyGiak/HP_model#some-theory)
+    1. [Algorithm for the protein structure](https://github.com/TommyGiak/HP_model#algorithm-for-the-protein-structure)
+    2. [Acceptance of the structure](https://github.com/TommyGiak/HP_model#acceptance-of-the-structure)
+    3. 
+5. [Execution example](https://github.com/TommyGiak/HP_model#execution-example)
 
 ## Install and run the code
 
@@ -69,7 +71,7 @@ The other options are:
 
 ### Create a personalized configuration file
 
-To create a personalized configuration file you can just copy the sintax of the _config.txt_ changing the parameters as you prefer. To use it in the simulation follow the instruction [here](https://github.com/TommyGiak/HP_model#install-and-run-the-code).\
+To create a personalized configuration file you can just copy the syntax of the _config.txt_ changing the parameters as you prefer. To use it in the simulation follow the instruction [here](https://github.com/TommyGiak/HP_model#install-and-run-the-code).\
 The new configuration file can have any extension.
 
 ## Repository strurcture
@@ -83,7 +85,11 @@ The repository contain these pyhton files:
 - _test.py_: contains the test functions to test the code
 - _config.txt_: contains the information needed by the program as input
 
-## Algorithm for the protein folding
+## Some theory
+
+As already mentioned before, the HP model for protein folding is a model for protein folding that simplifies the complex process of predicting protein structures by focusing on two types of amino acids: hydrophobic (H) and polar (P). It assumes that hydrophobic amino-acids cluster together inside the protein to avoid water, while polar amino acids are on the protein's surface. This model is a useful educational tool to teach the basics of protein folding but is highly simplified compared to real protein folding, which involves many other factors and interactions. Researchers often use more sophisticated models for accurate predictions.
+
+### Algorithm for the protein folding
 
 The algorithm for the protein folding is implemented in the `Protein` class in the _protein_class.py_ file, with the support of some more generic function in the _utils.py_ file.\
 Each folding step involve the following steps:
@@ -93,7 +99,7 @@ Each folding step involve the following steps:
 1. the new protein is validated: if the protein sequence overlap (or the distance between neighbours is different from one) the process restart from the step 1.
 1. if the protein structure is valid the new structure (the folded protein) is passed.
 
-## Acceptance of the structure
+### Acceptance of the structure
 
 Once a new structure is generated by a folding step, the energy of this new structure is computed and the acception follows the Metropolis algorithm.\
 If the energy of the new protein structure is less than the previous one, the new structure is always accepted, if instead the energy is grater the new structure is accepted with probability:
@@ -102,7 +108,8 @@ If the energy of the new protein structure is less than the previous one, the ne
 p = e^{-\frac{\Delta E}{k_bT}}
 ```
 
-where $\Delta E > 0$.
+where $\Delta E > 0$.\
+__N.B.__ I approximate $k_b = 1$ for semplicity so, in this application, when appears a temperature $T=c$, it actually means $k_b T = c$.
 
 ## Execution example
 
