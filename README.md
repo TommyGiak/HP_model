@@ -16,7 +16,6 @@ This project can be used to have a first impact of the behaviour of a protein an
 4. [Some theory](https://github.com/TommyGiak/HP_model#some-theory)
     1. [Algorithm for the protein structure](https://github.com/TommyGiak/HP_model#algorithm-for-the-protein-structure)
     2. [Acceptance of the structure](https://github.com/TommyGiak/HP_model#acceptance-of-the-structure)
-    3. 
 5. [Execution example](https://github.com/TommyGiak/HP_model#execution-example)
 
 ## Install and run the code
