@@ -62,9 +62,9 @@ def is_valid_sequence(seq : str) -> bool:
             return True
     elif len(unique_c) == 1:
         if 'H' in unique_c or 'P' in unique_c:
-            return True
-    else:
-        return False
+            return True   
+        
+    return False # if True is not returned yet, return Fasle since the sequence must be invalid 
     
 
 def linear_struct(seq : str) -> list:
@@ -111,17 +111,18 @@ def get_dist(coord1 : list, coord2 : list) -> float:
     return dist
 
 
-def diagonal_move(struct : list) -> list:
+def diagonal_move(struct : list, previous : list) -> list:
     '''
-    Move the first monomer along a diagonal looking for the second monomer in the sequence. \n
-    The information of the following monomer helps to the optimization of the algorithm. \n
-    It is assumed that the protein structure starts in [0,0], so the second monomer must have a coordinate eqaul
-    to +/- 1 and the other equal to zero.
+    Move the first monomer along a diagonal looking at the previous and following monomers in the sequence. \n
+    It is assumed that the protein structure starts in [0,0], so the coordinates of the surrounding monomers must have only zeros and ones. \n
+    This function is called only if the structure can accept a diagonal move (surrounding monomers not aligned).
 
     Parameters
     ----------
     struct : list
         Protein structure starting in [0,0].
+    previous : list
+        x and y coordinates of the previous monomer shifted such that the first monomer of struct is [0,0]
 
     Returns
     -------
@@ -129,39 +130,17 @@ def diagonal_move(struct : list) -> list:
         The structure with the first monomer moved.
     '''
     case = random.randint(0, 1) # random movement respect the second monomer
-    x,y = struct[1] # second monomer coordinates
+    x_prev, y_prev = previous # previous monomer coords
+    x_foll, y_foll = struct[1] # following monomer coordinates
 
-    # movement settings
-    if x == 1:
-        if case == 0:
-            struct[0] = [1,1]
-        if case == 1:
-            struct[0] = [1,-1]
-    elif x == -1:
-        if case == 0:
-            struct[0] = [-1,1]
-        if case == 1:
-            struct[0] = [-1,-1]
-    elif y == 1:
-        if case == 0:
-            struct[0] = [1,1]
-        if case == 1:
-            struct[0] = [-1,1]
-    elif y == -1:
-        if case == 0:
-            struct[0] = [1,-1]
-        if case == 1:
-            struct[0] = [-1,-1]
-    else:
-        raise RuntimeError('No compatible information about the second monomer')
+    struct[0] = [x_prev+x_foll,y_prev+y_foll]
     
     return struct
 
 
-def tail_fold(struct : list, method : int = None) -> list:
+def tail_fold(struct : list, method : int, previous : list) -> list:
     '''
     Apply a rotation/inversion of symmetry at the sequence inserted.\n
-    If no method is specified a random one is choosed.\n
     7 methods are present:
         1: 90° clockwise rotation
         2: 90° anticlockwise rotation
@@ -176,17 +155,16 @@ def tail_fold(struct : list, method : int = None) -> list:
     ----------
     struct : list
         Structure of the sequence for which each element is the x and y coordinates of the monomer.
-    method : int, optional
-        The method to apply to the structure. If no method is specified a random one is choosed.
+    method : int
+        The method to apply to the structure.
+    previous : list
+        x and y coordinates of the previous monomer shifted such that the first monomer of struct is [0,0]
 
     Returns
     -------
     list
         The structure transformed.
-    '''
-    if method == None: # if a specific method is not specified a random one is choosed
-        method = random.randint(1, 8)
-        
+    ''' 
     new_tail = []
     
     if method == 1: # 90 rotation clockwise 
@@ -211,7 +189,7 @@ def tail_fold(struct : list, method : int = None) -> list:
         for x,y in struct:
             new_tail.append([y,x])
     if method == 8: # movement on the digonal
-        new_tail = diagonal_move(struct)
+        new_tail = diagonal_move(struct, previous)
                 
     return new_tail
 

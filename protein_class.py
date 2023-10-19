@@ -213,11 +213,19 @@ class Protein():
             index = random.randint(1, self.n-2) # select a random monomer where start the folding
             x, y = self.struct[index] 
             tail = self.struct[index:] # tail of the structure that will be folded
+
+            # Excluding diagonal move is the sequence cannot support it (the previous and following monomer are aligned)
+            distance_sur = utils.get_dist(self.struct[index-1],self.struct[index+1])
+            diag_move = True if math.isclose(distance_sur,math.sqrt(2)) else False
             
             for i,mon in enumerate(tail): # shifting the tail start in [0,0] for the folding
                 tail[i] = [mon[0]-x, mon[1]-y]
+            previous = self.struct[index-1] # recording the prev monomer
+            previous = [previous[0]-x, previous[1]-y]
                 
-            tail = utils.tail_fold(tail) # fold the tail with a random method
+            # choose a random method for the protein folding
+            method = random.randint(1, 8) if diag_move else random.randint(1, 7) # exclude diagonal move if the conditions don't match
+            tail = utils.tail_fold(struct=tail, method=method, previous=previous) # fold the tail with a random method
             
             for i,mon in enumerate(tail): # shifting the folded tail in the correct position
                 tail[i] = [mon[0]+x, mon[1]+y]
