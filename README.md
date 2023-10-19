@@ -6,6 +6,7 @@ I created a command line application that can take the sequence of a protein (ev
 This project can be used to have a first impact of the behaviour of a protein and can be used to study the transitions to native states of proteins as function of temperature and bounding energy. Can be also done different test and comparison, for example seeing the different behaviours of similar proteins when two random adjacent aminoacids are switched.
 
 ## Table of contents
+
 1. [Install and run the code](https://github.com/TommyGiak/HP_model#install-and-run-the-code)
 2. [Parameters setting](https://github.com/TommyGiak/HP_model#parameters-setting)
     1. [Insert the protein sequence](https://github.com/TommyGiak/HP_model#insert-the-protein-sequence)
@@ -67,6 +68,7 @@ The other options are:
 - using a specific initial structure for the protein, setting _use_structure_ TRUE and inserting a correct structure in _structure_
 - set the initial temperature, using the variable _T_. If the variable _annealing_ is TRUE the temperature decreases linearly to zero during the evolution of the protein, in the other case the temperature remains constant.
 - create or not the gif of the process at the and of the evolution, using the variable _create_gif_ TRUE or FALSE.
+- random seed selection: you can specify the random seed to use or insert _seed = None_ to generate a random one that will be printed when the starting of the simulation.
 
 ### Create a personalized configuration file
 
@@ -135,4 +137,3 @@ The results are present also in the [data folder](https://github.com/TommyGiak/H
 
 It is easy to see from the plots how the energy and the compactness stabilize when the temperature $T$ reach $\sim0.5$.
 To notice also that lowest energy does not correspond to highest compactness.
-

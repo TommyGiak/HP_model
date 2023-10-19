@@ -285,7 +285,6 @@ class Configuration():
     -------
     None.
     '''
-
     def __init__(self, config) -> None:
         self.seq = config['SEQUENCE']['sequence'] # selected sequence
         self.folds = config['PROCESS'].getint('folding_steps') # number of folds
@@ -296,3 +295,7 @@ class Configuration():
             struct = config['optional']['structure'] # structure if TRUE in input file
             self.struct = json.loads(struct)
         self.gif = config['optional'].getboolean('create_gif')
+        self.seed = config['random_seed']['seed'] # get the random seed
+        if self.seed == 'None': # generate a random seed if None
+            self.seed = random.randint(0,10000)
+        self.seed = int(self.seed) # convers the seed to int in any case

@@ -12,8 +12,6 @@ import matplotlib.pyplot as plt
 import plots
 
 
-random.seed(123) # random seed for replicability
-
 # Parser to get from terminal the configuration file
 parser = argparse.ArgumentParser()
 # the filename is optional, the default is the config.txt
@@ -28,13 +26,22 @@ configuration.read(filename)
 
 config = utils.Configuration(configuration) # class to get the save the configuration from the file
 
+#Random seed setting
+random.seed(config.seed)
+print(f'The random seed used is {config.seed}')
+
 prot = Protein(config) # Protein class 
 
 plots.view(protein=prot, tit='Initial configuration') # plot the structure of the protein
 
 start = time.time() 
 
+print('--------------------')
+print('Evolution started...')
 prot.evolution() # evolve the protein with folds foldings
+print('Evolution ended')
+print('---------------')
+
 # various plots:
 plots.view(protein=prot, save=False, tit='Final configuration')
 plots.view_min_en(protein=prot)
