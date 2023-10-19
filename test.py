@@ -15,10 +15,8 @@ configuration.read('config.txt')
 config = utils.Configuration(configuration)
 
 
-correct_structures = [[[0, 0],[0, 1],[1, 1],[1, 2],[1, 3],[2, 3],[2, 2],
-                      [2, 1],[2, 0],[2, -1],[1, -1],[0, -1],[-1, -1]],                    
-                      [[0, 0],[0, 1],[1, 1],[1, 2],[1, 3],[2, 3],[2, 2],
-                      [2, 1],[2, 0],[2, -1],[2, -2],[2, -3],[2, -4]],
+correct_structures = [[[0,0],[0,1],[1,1],[1,2],[1,3],[2,3],[2,2],[2,1],[2,0],[2,-1],[1,-1],[0,-1],[-1,-1]],                    
+                      [[0,0],[0,1],[1,1],[1,2],[1,3],[2,3],[2,2],[2,1],[2,0],[2,-1],[2,-2],[2,-3],[2,-4]],
                       [[0,0],[0,1],[1,1],[1,2],[1,3],[2,3]],
                       [[0,0],[1,0],[1,1],[1,2],[1,3],[2,3]],
                       [[0,0],[0,-1],[1,-1],[1,-2],[1,-3],[2,-3]],
@@ -191,7 +189,7 @@ def test_random_fold_valid_struc():
         assert utils.is_valid_struct(prot2.struct)
     
     
-def test_tail_fold_valid_struct():
+def test_tail_fold_valid_struct_exept_diagonal_move():
     '''
     Test tail_fold gives valid sequences for each method
 
@@ -200,11 +198,18 @@ def test_tail_fold_valid_struct():
     THEN: I expect a valid protein structure
     '''
     for struct in correct_structures:
+        tail = struct[1:]
+        x,y = tail[0]
+        for i,mon in enumerate(tail): # shifting the tail start in [0,0] for the folding
+                tail[i] = [mon[0]-x, mon[1]-y]
+        previous = struct[0] # recording the prev monomer
+        previous = [previous[0]-x, previous[1]-y]
+        
         for i in range(7):
-            assert utils.tail_fold(struct,i+1)
+            assert utils.is_valid_struct(utils.tail_fold(tail, i+1, previous))
             
             
-def test_tail_fold_correct_length():
+def test_tail_fold_correct_length_exept_diagonal_move():
     '''
     Test that tail_fold does not change the sequence length
 
@@ -215,7 +220,7 @@ def test_tail_fold_correct_length():
     for struct in correct_structures:
         for i in range(7):
             l = len(struct)
-            l_new = len(utils.tail_fold(struct,i+1))
+            l_new = len(utils.tail_fold(struct,i+1,[0,0]))
             assert l == l_new
   
             
@@ -228,21 +233,27 @@ def test_diagonal_move_length():
     THEN: the structure length should not change
     '''
     for struct in correct_structures:
-        l = len(struct)
-        
-        assert l == len(utils.diagonal_move(struct))
+        tail = struct[1:]
+        x,y = tail[0]
+        for i,mon in enumerate(tail): # shifting the tail start in [0,0] for the folding
+                tail[i] = [mon[0]-x, mon[1]-y]
+        previous = struct[0] # recording the prev monomer
+        previous = [previous[0]-x, previous[1]-y]
+
+        l = len(tail)
+        assert l == len(utils.diagonal_move(tail,previous))
       
 
 def test_diagonal_move_equal_struct():
     '''
-    Test that diagolan_move let unchanged the structure from the second monomer.
+    Test that diagolan_move lets unchanged the structure from the second monomer.
     
     GIVEN: a structure starting in [0,0]
     WHEN: I want to move the first monomer on a diagonal to fold the protein
     THEN: the structure starting from the second monomer should not change
     '''
     for struct in correct_structures:
-        new_struct = utils.diagonal_move(struct)
+        new_struct = utils.diagonal_move(struct,[0,0])
         assert new_struct[1:] == struct[1:]
         
     
@@ -254,10 +265,17 @@ def test_diagonal_move_first_mon_move():
     WHEN: I want to move the first monomer on a diagonal to fold the protein
     THEN: I expect the distance between first and second monomer equal to one
     '''
-    for struct in correct_structures:
-        struct = utils.diagonal_move(struct)
-        d = utils.get_dist(struct[0], struct[1])
-        assert isclose(d, 1)
+    struct = [[0,0],[1,0],[1,1],[2,1],[2,2],[3,2],[3,3]]
+    tail = struct[1:]
+    x,y = tail[0]
+    for i,mon in enumerate(tail): # shifting the tail start in [0,0] for the folding
+            tail[i] = [mon[0]-x, mon[1]-y]
+    previous = struct[0] # recording the prev monomer
+    previous = [previous[0]-x, previous[1]-y]
+
+    tail = utils.diagonal_move(tail,previous)
+    d = utils.get_dist(tail[0], tail[1])
+    assert isclose(d, 1)
     
     
 def test_hp_sequence_transform_letters():
