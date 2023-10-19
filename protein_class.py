@@ -179,27 +179,18 @@ class Protein():
         '''
         neig = '' # string to save the neighbors
         x,y = self.struct[i] # coordinates of the monomer
-        
-        if [x+1,y] in self.struct: # check each neighbor exist
-            ind = self.struct.index([x+1,y]) # get the position on the sequence of the neighbor
-            if ind != i+1 and ind != i-1: # exluding the backbone of the protein from neighbors
-                neig += self.seq[ind] # get the neighbor type H/P
-        
-        if [x-1,y] in self.struct: # repeat the previus sequence for each neighbor in the sequence
-            ind = self.struct.index([x-1,y])
-            if ind != i+1 and ind != i-1:
+
+        possible_neig = [[x-1,y],[x,y-1],[x+1,y],[x,y+1]]
+        if i > 0:
+            possible_neig.remove(self.struct[i-1])
+        if i < (self.n - 1):
+            possible_neig.remove(self.struct[i+1])
+
+        for monomer in possible_neig:
+            if monomer in self.struct:
+                ind = self.struct.index(monomer) # get the position on the sequence of the neighbor
                 neig += self.seq[ind]
-        
-        if [x,y+1] in self.struct:
-            ind = self.struct.index([x,y+1])
-            if ind != i+1 and ind != i-1:
-                neig += self.seq[ind]
-        
-        if [x,y-1] in self.struct:
-            ind = self.struct.index([x,y-1])
-            if ind != i+1 and ind != i-1:
-                neig += self.seq[ind]
-        
+
         return neig
         
     
