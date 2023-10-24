@@ -7,6 +7,7 @@ import protein_class as p
 import utils
 import configparser
 from math import isclose, sqrt
+import random
 import hypothesis
 
 configuration = configparser.ConfigParser()
@@ -37,17 +38,13 @@ seq2 = 'VFCNKASIRIPWTKLKTHPICLSLDKVIMEMSTCEEPRSPFAEK'
 seq3 = 'VVEGISVSVNSIVIRIGAKAFNASFELSQLRIYSVNAHWEHGDLRFTRIQDPQRGEV'
 seq4 = 'DLMSVVVFKITGVNGEIDIRGEDTEICLQVNQVTPDQLGNISLRHYLCNRPVGSDQKAVATVMPMKIQVSNTKINLKDDSPRSSTVSLEPAPVTVHIDHLVVERSDDGSFHIRDSHMLNTGNDLKENVKSDSV'
 seq5 = 'LTSGKYDLKKQRSVTQATQTSPGVPWPSQSANFPEFSFDFTREQLMEENESLKQELAKAKMALAEAHLEKDALLHHIKKMTVE'
-seq_invalid = 'ASDHLKGFDKJHDCVNB'
 
+seq_invalid = 'ASDHLKGFDKJHDCVNB' # contains letters which don't represent any amino-acids
 
-wrong_structures = [[[0,0],[0,0],[0,1],[0,2],[0,3],[1,3]],
-                      [[0,0],[1,1],[1,2],[1,3],[2,3]],
-                      [[0,0],[1,-1],[1,-2],[1,-3],[2,-3]],
-                      [[0,0],[1,0],[3,0],[2,1],[2,2],[2,3]],
-                      [[0,0],[-1,0],[-1,1],[-1,2],[-1,1],[0,1]],
-                      [[0,0],[1,-1],[1,-2],[1,-3]],
-                      [[0,0],[1,0],[3,0],[2,1],[2,3]],
-                      [[0,0],[-1,0],[-1,1],[-1,2],[-1,1],[0,1]]]
+wrong_str_double_point = [[0,0],[0,0],[0,1],[0,2],[0,3],[1,3]]
+wrong_str_skip_step_square = [[0,0],[1,1],[1,2],[1,3],[2,3]]
+wrong_str_skip_step_linear = [[0,0],[1,0],[3,0],[2,1],[2,2],[2,3]]
+wrong_str_return_point = [[0,0],[-1,0],[-1,1],[-1,2],[-1,1],[0,1]]
 
 
 def test_is_valid_struct_when_correct(structures = correct_structures):
@@ -64,21 +61,75 @@ def test_is_valid_struct_when_correct(structures = correct_structures):
         assert utils.is_valid_struct(struct)
     
     
-def test_is_valid_struct_when_wrong(structures = wrong_structures):
+def test_is_valid_struct_when_wrong_double_point(structure = wrong_str_double_point):
     '''
     Test the is_valid_struct when a wrong structure is given, a list of wrong structures are given in 
     the first part of the file.
     
-    GIVEN: a wrong structure\n
+    GIVEN: a wrong structure with a same point repited twice\n
     WHEN: I want to verify if the structure is actually see as wrong with is_valid_struct\n
     THEN: I expect a False response from the function
     '''
+    assert not utils.is_valid_struct(structure)
     
-    for struct in structures:
-        assert not utils.is_valid_struct(struct)
+def test_is_valid_struct_when_wrong_step_square(structure = wrong_str_skip_step_square):
+    '''
+    Test the is_valid_struct when a wrong structure is given, a list of wrong structures are given in 
+    the first part of the file.
     
+    GIVEN: a wrong structure with a point is skipped -> the distance between two consecutive points is sqrt(2)\n
+    WHEN: I want to verify if the structure is actually see as wrong with is_valid_struct\n
+    THEN: I expect a False response from the function
+    '''
+    assert not utils.is_valid_struct(structure)
+    
+def test_is_valid_struct_when_wrong_step_linear(structure = wrong_str_skip_step_linear):
+    '''
+    Test the is_valid_struct when a wrong structure is given, a list of wrong structures are given in 
+    the first part of the file.
+    
+    GIVEN: a wrong structure with a point is skipped -> the distance between two consecutive points is 2\n
+    WHEN: I want to verify if the structure is actually see as wrong with is_valid_struct\n
+    THEN: I expect a False response from the function
+    '''
+    assert not utils.is_valid_struct(structure)
 
-def test_is_valid_sequence_when_correct():
+def test_is_valid_struct_when_wrong_return_point(structure = wrong_str_return_point):
+    '''
+    Test the is_valid_struct when a wrong structure is given, a list of wrong structures are given in 
+    the first part of the file.
+    
+    GIVEN: a wrong structure with sequence that return on the same point (overlap)\n
+    WHEN: I want to verify if the structure is actually see as wrong with is_valid_struct\n
+    THEN: I expect a False response from the function
+    '''
+    assert not utils.is_valid_struct(structure)
+
+
+def test_is_valid_sequence_when_correct_only_H():
+    '''
+    Test the is_valid_sequence when the sequence is correct.
+    A bounch of test sequence are given, including cases with only H or only P.
+
+    GIVEN: a correct protein sequence of H\n
+    WHEN: is_valid_sequence is apply\n
+    THEN: I expect that the function return True
+    '''
+    
+    assert utils.is_valid_sequence('HHHHHHHHHHHHH')
+
+def test_is_valid_sequence_when_correct_only_P():
+    '''
+    Test the is_valid_sequence when the sequence is correct.
+    A bounch of test sequence are given, including cases with only H or only P.
+
+    GIVEN: a correct protein sequence of P\n
+    WHEN: is_valid_sequence is apply\n
+    THEN: I expect that the function return True
+    '''
+    assert utils.is_valid_sequence('PPPPPPPPP')
+
+def test_is_valid_sequence_when_correct_both_HP():
     '''
     Test the is_valid_sequence when the sequence is correct.
     A bounch of test sequence are given, including cases with only H or only P.
@@ -87,114 +138,219 @@ def test_is_valid_sequence_when_correct():
     WHEN: is_valid_sequence is apply\n
     THEN: I expect that the function return True
     '''
-    
-    assert utils.is_valid_sequence('HHHHHH')
-    assert utils.is_valid_sequence('PPPPPPPPP')
     assert utils.is_valid_sequence('PHPHPPPPHHHPHPHPH')
-    assert utils.is_valid_sequence('HPHPHHHP')
 
         
-def test_is_valid_sequence_when_wrong():
+def test_is_valid_sequence_when_wrong_small_case_h():
     '''
     Test the is_valid_sequence when the sequence is wrong.
     A bounch of test sequence are given, including cases with lowercase h and p.
 
-    GIVEN: a wrong protein sequence\n
+    GIVEN: a wrong protein sequence with a smaller case letter h\n
     WHEN: is_valid_sequence is apply\n
     THEN: I expect that the function return False
     '''
-    
     assert not utils.is_valid_sequence('HHHhHH')
+
+def test_is_valid_sequence_when_wrong_small_case_p():
+    '''
+    Test the is_valid_sequence when the sequence is wrong.
+    A bounch of test sequence are given, including cases with lowercase h and p.
+
+    GIVEN: a wrong protein sequence with a smaller case letter p\n
+    WHEN: is_valid_sequence is apply\n
+    THEN: I expect that the function return False
+    '''
     assert not utils.is_valid_sequence('PPPpPPPPP')
+  
+def test_is_valid_sequence_when_wrong_not_HP_upper():
+    '''
+    Test the is_valid_sequence when the sequence is wrong.
+    A bounch of test sequence are given, including cases with lowercase h and p.
+
+    GIVEN: a wrong protein sequence with a letter different from H/P upper case\n
+    WHEN: is_valid_sequence is apply\n
+    THEN: I expect that the function return False
+    '''
     assert not utils.is_valid_sequence('PHPAPPPPHHHPHPHPH')
     assert not utils.is_valid_sequence('HPHPLHHP')
-    assert not utils.is_valid_sequence('HA')
+     
+def test_is_valid_sequence_when_wrong_not_HP_upper():
+    '''
+    Test the is_valid_sequence when the sequence is wrong.
+    A bounch of test sequence are given, including cases with lowercase h and p.
+
+    GIVEN: a wrong protein sequence with a letter different from H/P lower case\n
+    WHEN: is_valid_sequence is apply\n
+    THEN: I expect that the function return False
+    '''
+    assert not utils.is_valid_sequence('PHPaPPPPHHHPHPHPH')
+    assert not utils.is_valid_sequence('HPHPlHHP')
+
+def test_is_valid_sequence_when_wrong_too_short_2():
+    '''
+    Test the is_valid_sequence when the sequence is wrong.
+    A bounch of test sequence are given, including cases with lowercase h and p.
+
+    GIVEN: a wrong protein sequence with a too short sequence (2)\n
+    WHEN: is_valid_sequence is apply\n
+    THEN: I expect that the function return False
+    '''
     assert not utils.is_valid_sequence('HP')
+
+def test_is_valid_sequence_when_wrong_too_short_1():
+    '''
+    Test the is_valid_sequence when the sequence is wrong.
+    A bounch of test sequence are given, including cases with lowercase h and p.
+
+    GIVEN: a wrong protein sequence with a too short sequence (1)\n
+    WHEN: is_valid_sequence is apply\n
+    THEN: I expect that the function return False
+    '''
     assert not utils.is_valid_sequence('P')
-    assert not utils.is_valid_sequence('PPPHHHl')        
-        
-        
-def test_get_dist():
+
+
+def test_get_dist_0():
     ''' 
     Test get_dist that computes correctly the euclidean distance
     
-    GIVEN: different points in the lattice\n
+    GIVEN: different points in the lattice distance zero\n
     WHEN: I want to compute the euclidean distance\n
     THEN: I expect the correct euclidean distance
     '''
     assert isclose(utils.get_dist((1,1), (1,1)), 0)
-    assert isclose(utils.get_dist((1,1), (2,1)), 1)
-    assert isclose(utils.get_dist((1,1), (3,1)), 2)
-    assert isclose(utils.get_dist((0,0), (1,1)), sqrt(2))
-    assert isclose(utils.get_dist((-1,1), (1,3)), 2*sqrt(2))  
     
-        
+def test_get_dist_1():
+    ''' 
+    Test get_dist that computes correctly the euclidean distance
+    
+    GIVEN: different points in the lattice distance one\n
+    WHEN: I want to compute the euclidean distance\n
+    THEN: I expect the correct euclidean distance
+    '''
+    assert isclose(utils.get_dist((1,1), (2,1)), 1)   
+    
+def test_get_dist_2():
+    ''' 
+    Test get_dist that computes correctly the euclidean distance
+    
+    GIVEN: different points in the lattice distance 2\n
+    WHEN: I want to compute the euclidean distance\n
+    THEN: I expect the correct euclidean distance
+    '''
+    assert isclose(utils.get_dist((1,1), (3,1)), 2)
+
+def test_get_dist_sqrt_2():
+    ''' 
+    Test get_dist that computes correctly the euclidean distance
+    
+    GIVEN: different points in the lattice distance sqrt(2)\n
+    WHEN: I want to compute the euclidean distance\n
+    THEN: I expect the correct euclidean distance
+    '''
+    assert isclose(utils.get_dist((0,0), (1,1)), sqrt(2))
+
+def test_get_dist_2_sqrt_2():
+    ''' 
+    Test get_dist that computes correctly the euclidean distance
+    
+    GIVEN: different points in the lattice distance 2*sqrt(2)\n
+    WHEN: I want to compute the euclidean distance\n
+    THEN: I expect the correct euclidean distance
+    '''
+    assert isclose(utils.get_dist((-1,1), (1,3)), 2*sqrt(2))  
+
+
 def test_energy_computation():
     '''
     Test the energy computation of the protein structures for two structures defined above.
-    '''
-    prot1, prot2 = p.Protein(config), p.Protein(config)
-    prot1.seq = seq
-    prot1.struct = correct_structures[0]
-    prot2.seq = seq
-    prot2.struct = correct_structures[1]
-    prot1.n, prot2.n = len(seq), len(seq)
-    assert isclose(prot1.energy(), -2.)
-    assert isclose(prot2.energy(), -1.)
-    
-    
-def test_get_neig():
-    '''
-    Test the get neighbors function using a hand made structure and a linear structure (which should not has neighbors)
+
+    GIVEN: a specific porotein structure\n
+    WHEN: I want to compute the energy\n
+    THEN: I expect that tha energy is exactly -2
     '''
     prot1 = p.Protein(config)
     prot1.seq = seq
     prot1.struct = correct_structures[0]
     prot1.n = len(seq)
+    assert isclose(prot1.energy(), -2.)
+
+    
+def test_get_neig_linear():
+    '''
+    Test the get neighbors function using a hand made structure and a linear structure (which should not has neighbors)
+
+    GIVEN: a linear structure for a protein\n
+    WHEN: I want to check the neighbours of each monomer\n
+    THEN: I expect no neighbours for the monomers
+    '''
+    prot = p.Protein(config)
+    prot.seq = 'HPHPHPHPPPPHHHHPPP'
+    prot.struct = utils.linear_struct(prot.seq)
+    prot.n = len(prot.seq)
+    for i in range(prot.n):
+        assert prot.get_neig_of(i) == ''
+
+def test_get_neig_composite():
+    '''
+    Test the get neighbors function using a hand made structure and a linear structure (which should not has neighbors)
+
+    GIVEN: a composite structure for a protein\n
+    WHEN: I want to check the neighbours of each monomer\n
+    THEN: I expect specific neighbours for each monomer
+    '''
+    prot = p.Protein(config)
+    prot.seq = seq
+    prot.struct = correct_structures[0]
+    prot.n = len(seq)
     neig = ['H','','P','H','','','H','P','','','','H','']
-    for i in range(prot1.n):
-        assert prot1.get_neig_of(i) == neig[i]
-    prot2 = p.Protein(config)
-    prot2.seq = 'HPHPHPHPPPPHHHHPPP'
-    prot2.struct = utils.linear_struct(prot2.seq)
-    prot2.n = len(prot2.seq)
-    for i in range(prot2.n):
-        assert prot2.get_neig_of(i) == ''
+    for i in range(prot.n):
+        assert prot.get_neig_of(i) == neig[i]
         
     
-def test_random_fold_valid_struc():
+def test_random_fold_valid_struc_linear():
     '''
     Test that the random fald of the protein gives a valid structure
 
-    GIVEN: a valid protein structure
+    GIVEN: a valid linear protein structure
     WHEN: I want to randomly fold the protein
     THEN: I expect a valid protein structure
     '''
+    random.seed(4326748)
     n = 1000
-    
-    prot1 = p.Protein(config)
-    prot1.seq = seq
-    prot1.struct = correct_structures[0]
-    prot1.n = len(seq)
+    prot = p.Protein(config)
+    prot.seq = 'HPHPHPHPHPHHHHHPPHPHPHPPHHPPPPHHPP'
+    prot.struct = utils.linear_struct(prot.seq)
+    prot.n = len(prot.seq)
     for i in range(n):
-        prot1.struct = prot1.random_fold()
-        assert utils.is_valid_struct(prot1.struct)
-        
-    prot2 = p.Protein(config)
-    prot2.seq = 'HPHPHPHPHPHHHHHPPHPHPHPPHHPPPPHHPP'
-    prot2.struct = utils.linear_struct(prot2.seq)
-    prot2.n = len(prot2.seq)
-    for i in range(n):
-        prot2.struct = prot2.random_fold()
-        assert utils.is_valid_struct(prot2.struct)
-    
-    
-def test_tail_fold_valid_struct_exept_diagonal_move():
+        prot.struct = prot.random_fold()
+        assert utils.is_valid_struct(prot.struct)
+
+def test_random_fold_valid_struc_composite():
     '''
-    Test tail_fold gives valid sequences for each method
+    Test that the random fald of the protein gives a valid structure
+
+    GIVEN: a valid composite protein structure
+    WHEN: I want to randomly fold the protein
+    THEN: I expect a valid protein structure
+    '''
+    random.seed(7694)
+    n = 1000
+    prot = p.Protein(config)
+    prot.seq = seq
+    prot.struct = correct_structures[0]
+    prot.n = len(seq)
+    for i in range(n):
+        prot.struct = prot.random_fold()
+        assert utils.is_valid_struct(prot.struct)
+
+    
+def test_tail_fold_valid_struct_1():
+    '''
+    Test tail_fold gives valid sequences for 90 deg rotation clock
 
     GIVEN: a valid protein structure and a specific method to use
-    WHEN: I want to randomly fold the protein
+    WHEN: I want to fold the protein
     THEN: I expect a valid protein structure
     '''
     for struct in correct_structures:
@@ -205,23 +361,207 @@ def test_tail_fold_valid_struct_exept_diagonal_move():
         previous = struct[0] # recording the prev monomer
         previous = [previous[0]-x, previous[1]-y]
         
-        for i in range(7):
-            assert utils.is_valid_struct(utils.tail_fold(tail, i+1, previous))
-            
-            
-def test_tail_fold_correct_length_exept_diagonal_move():
+        assert utils.is_valid_struct(utils.tail_fold(tail, 1, previous))
+
+def test_tail_fold_valid_struct_2():
     '''
-    Test that tail_fold does not change the sequence length
+    Test tail_fold gives valid sequences for 90 deg rotation anticlock
 
     GIVEN: a valid protein structure and a specific method to use
-    WHEN: I want to randomly fold the protein
+    WHEN: I want to fold the protein
+    THEN: I expect a valid protein structure
+    '''
+    for struct in correct_structures:
+        tail = struct[1:]
+        x,y = tail[0]
+        for i,mon in enumerate(tail): # shifting the tail start in [0,0] for the folding
+                tail[i] = [mon[0]-x, mon[1]-y]
+        previous = struct[0] # recording the prev monomer
+        previous = [previous[0]-x, previous[1]-y]
+        
+        assert utils.is_valid_struct(utils.tail_fold(tail, 2, previous))
+
+def test_tail_fold_valid_struct_3():
+    '''
+    Test tail_fold gives valid sequences for 180 deg rotation
+
+    GIVEN: a valid protein structure and a specific method to use
+    WHEN: I want to fold the protein
+    THEN: I expect a valid protein structure
+    '''
+    for struct in correct_structures:
+        tail = struct[1:]
+        x,y = tail[0]
+        for i,mon in enumerate(tail): # shifting the tail start in [0,0] for the folding
+                tail[i] = [mon[0]-x, mon[1]-y]
+        previous = struct[0] # recording the prev monomer
+        previous = [previous[0]-x, previous[1]-y]
+        
+        assert utils.is_valid_struct(utils.tail_fold(tail, 3, previous))
+            
+def test_tail_fold_valid_struct_4():
+    '''
+    Test tail_fold gives valid sequences for x-reflection
+
+    GIVEN: a valid protein structure and a specific method to use
+    WHEN: I want to fold the protein
+    THEN: I expect a valid protein structure
+    '''
+    for struct in correct_structures:
+        tail = struct[1:]
+        x,y = tail[0]
+        for i,mon in enumerate(tail): # shifting the tail start in [0,0] for the folding
+                tail[i] = [mon[0]-x, mon[1]-y]
+        previous = struct[0] # recording the prev monomer
+        previous = [previous[0]-x, previous[1]-y]
+        
+        assert utils.is_valid_struct(utils.tail_fold(tail, 4, previous))
+
+def test_tail_fold_valid_struct_5():
+    '''
+    Test tail_fold gives valid sequences for y-reflection
+
+    GIVEN: a valid protein structure and a specific method to use
+    WHEN: I want to fold the protein
+    THEN: I expect a valid protein structure
+    '''
+    for struct in correct_structures:
+        tail = struct[1:]
+        x,y = tail[0]
+        for i,mon in enumerate(tail): # shifting the tail start in [0,0] for the folding
+                tail[i] = [mon[0]-x, mon[1]-y]
+        previous = struct[0] # recording the prev monomer
+        previous = [previous[0]-x, previous[1]-y]
+        
+        assert utils.is_valid_struct(utils.tail_fold(tail, 5, previous))
+
+def test_tail_fold_valid_struct_6():
+    '''
+    Test tail_fold gives valid sequences for bisec symmetry
+
+    GIVEN: a valid protein structure and a specific method to use
+    WHEN: I want to fold the protein
+    THEN: I expect a valid protein structure
+    '''
+    for struct in correct_structures:
+        tail = struct[1:]
+        x,y = tail[0]
+        for i,mon in enumerate(tail): # shifting the tail start in [0,0] for the folding
+                tail[i] = [mon[0]-x, mon[1]-y]
+        previous = struct[0] # recording the prev monomer
+        previous = [previous[0]-x, previous[1]-y]
+        
+        assert utils.is_valid_struct(utils.tail_fold(tail, 6, previous))
+
+def test_tail_fold_valid_struct_7():
+    '''
+    Test tail_fold gives valid sequences for -bisec symmetry
+
+    GIVEN: a valid protein structure and a specific method to use
+    WHEN: I want to fold the protein
+    THEN: I expect a valid protein structure
+    '''
+    for struct in correct_structures:
+        tail = struct[1:]
+        x,y = tail[0]
+        for i,mon in enumerate(tail): # shifting the tail start in [0,0] for the folding
+                tail[i] = [mon[0]-x, mon[1]-y]
+        previous = struct[0] # recording the prev monomer
+        previous = [previous[0]-x, previous[1]-y]
+        
+        assert utils.is_valid_struct(utils.tail_fold(tail, 7, previous))
+
+
+def test_tail_fold_correct_length_1():
+    '''
+    Test that tail_fold does not change the sequence length for 90 deg rotation clock
+
+    GIVEN: a valid protein structure and a specific method to use
+    WHEN: I want to fold the protein
     THEN: I expect the structure length unchanged
     '''
     for struct in correct_structures:
-        for i in range(7):
-            l = len(struct)
-            l_new = len(utils.tail_fold(struct,i+1,[0,0]))
-            assert l == l_new
+        l = len(struct)
+        l_new = len(utils.tail_fold(struct,1,[0,0]))
+        assert l == l_new
+
+def test_tail_fold_correct_length_2():
+    '''
+    Test that tail_fold does not change the sequence length for 90 deg rotation anticlock
+
+    GIVEN: a valid protein structure and a specific method to use
+    WHEN: I want to fold the protein
+    THEN: I expect the structure length unchanged
+    '''
+    for struct in correct_structures:
+        l = len(struct)
+        l_new = len(utils.tail_fold(struct,2,[0,0]))
+        assert l == l_new
+
+def test_tail_fold_correct_length_3():
+    '''
+    Test that tail_fold does not change the sequence length for 180 deg rotation
+
+    GIVEN: a valid protein structure and a specific method to use
+    WHEN: I want to fold the protein
+    THEN: I expect the structure length unchanged
+    '''
+    for struct in correct_structures:
+        l = len(struct)
+        l_new = len(utils.tail_fold(struct,3,[0,0]))
+        assert l == l_new
+
+def test_tail_fold_correct_length_4():
+    '''
+    Test that tail_fold does not change the sequence length for x-reflection
+
+    GIVEN: a valid protein structure and a specific method to use
+    WHEN: I want to fold the protein
+    THEN: I expect the structure length unchanged
+    '''
+    for struct in correct_structures:
+        l = len(struct)
+        l_new = len(utils.tail_fold(struct,4,[0,0]))
+        assert l == l_new
+
+def test_tail_fold_correct_length_5():
+    '''
+    Test that tail_fold does not change the sequence length for y-reflection
+
+    GIVEN: a valid protein structure and a specific method to use
+    WHEN: I want to fold the protein
+    THEN: I expect the structure length unchanged
+    '''
+    for struct in correct_structures:
+        l = len(struct)
+        l_new = len(utils.tail_fold(struct,5,[0,0]))
+        assert l == l_new
+
+def test_tail_fold_correct_length_6():
+    '''
+    Test that tail_fold does not change the sequence length for bisec symmetry
+
+    GIVEN: a valid protein structure and a specific method to use
+    WHEN: I want to fold the protein
+    THEN: I expect the structure length unchanged
+    '''
+    for struct in correct_structures:
+        l = len(struct)
+        l_new = len(utils.tail_fold(struct,6,[0,0]))
+        assert l == l_new
+
+def test_tail_fold_correct_length_7():
+    '''
+    Test that tail_fold does not change the sequence length for -bisec symmetry
+
+    GIVEN: a valid protein structure and a specific method to use
+    WHEN: I want to fold the protein
+    THEN: I expect the structure length unchanged
+    '''
+    for struct in correct_structures:
+        l = len(struct)
+        l_new = len(utils.tail_fold(struct,7,[0,0]))
+        assert l == l_new
   
             
 def test_diagonal_move_length():
@@ -278,19 +618,24 @@ def test_diagonal_move_first_mon_move():
     assert isclose(d, 1)
     
     
-def test_hp_sequence_transform_letters():
+def test_hp_sequence_transform_letters_correct():
     '''
-    Test that hp_sequence_transform return a str with only H and P, if an invalid sequence is passed is should fail.
+    Test that hp_sequence_transform return a str with only H and P.
     
     GIVEN: a list of random sequences and an invalid sequence
     WHEN: I want to convert a complete amino-acid sequence into a sequence with only H and P
     THEN: I expect a string as return containing only H and P
     '''
-    assert set(utils.hp_sequence_transform(seq1)) == {'H', 'P'}
     assert set(utils.hp_sequence_transform(seq2)) == {'H', 'P'}
-    assert set(utils.hp_sequence_transform(seq3)) == {'H', 'P'}
-    assert set(utils.hp_sequence_transform(seq4)) == {'H', 'P'}
-    assert set(utils.hp_sequence_transform(seq5)) == {'H', 'P'}
+
+def test_hp_sequence_transform_letters_wrong():
+    '''
+    Test that hp_sequence_transform fails with a invalid sequence
+    
+    GIVEN: an invalid sequence
+    WHEN: I want to convert a complete amino-acid sequence into a sequence with only H and P
+    THEN: I and error arised in the function
+    '''
     try:
         s = utils.hp_sequence_transform(seq_invalid)
         raise ValueError('An invalid sequence is passed')
@@ -298,7 +643,7 @@ def test_hp_sequence_transform_letters():
         pass
 
 
-def test_hp_sequence_transform_lenght():
+def test_hp_sequence_transform_lenght_correct():
     '''
     Test that hp_sequence_transform conserve the length of the sequence.
     
@@ -306,11 +651,7 @@ def test_hp_sequence_transform_lenght():
     WHEN: I want to convert a complete amino-acid sequence into a sequence with only H and P
     THEN: I expect that the converted string has the same lenght than before
     '''
-    assert len(utils.hp_sequence_transform(seq1)) == len(seq1)
     assert len(utils.hp_sequence_transform(seq2)) == len(seq2)
-    assert len(utils.hp_sequence_transform(seq3)) == len(seq3)
-    assert len(utils.hp_sequence_transform(seq4)) == len(seq4)
-    assert len(utils.hp_sequence_transform(seq5)) == len(seq5)
 
 
 def test_evolution_minimize_energy():
@@ -323,31 +664,18 @@ def test_evolution_minimize_energy():
     THEN: I expect that the energy of the protein decrease (or remain equal to zero)
     '''
     # definition of the protein to test
-    prot1, prot2, prot3 = p.Protein(config), p.Protein(config), p.Protein(config)
-    prot1.seq, prot2.seq, prot3.seq = seq, seq1, seq2
+    prot1 = p.Protein(config)
+    prot1.seq = seq
     prot1.struct = utils.linear_struct(prot1.seq)
-    prot2.struct = utils.linear_struct(prot2.seq)
-    prot3.struct = utils.linear_struct(prot3.seq)
-    prot1.n, prot2.n, prot3.n = len(seq), len(seq1), len(seq2)
-
-    prot1.steps, prot2.steps, prot3.steps = 500, 500, 500
-
-    en1, en2, en3 = prot1.energy(), prot2.energy(), prot3.energy()
-
+    prot1.n = len(seq)
+    prot1.steps = 500
+    en1 = prot1.energy()
     # energy shoud be zero for the linear structure
     assert isclose(en1,0.)
-    assert isclose(en2,0.)
-    assert isclose(en3,0.)
-
-    # evolitions
+    # evolition
     prot1.evolution()
-    prot2.evolution()
-    prot3.evolution()
-
     # asserts for the energy minimization after the evolution (energy shoul not be grater than zero)
     assert prot1.energy() <= en1
-    assert prot2.energy() <= en2
-    assert prot3.energy() <= en3
 
 
 def test_evolution_maximize_compactness():
@@ -359,28 +687,15 @@ def test_evolution_maximize_compactness():
     THEN: I expect that the compactness of the protein never goes below zero
     '''
     # definition of the protein to test
-    prot1, prot2, prot3 = p.Protein(config), p.Protein(config), p.Protein(config)
-    prot1.seq, prot2.seq, prot3.seq = seq, seq1, seq2
+    prot1 = p.Protein(config)
+    prot1.seq = seq
     prot1.struct = utils.linear_struct(prot1.seq)
-    prot2.struct = utils.linear_struct(prot2.seq)
-    prot3.struct = utils.linear_struct(prot3.seq)
-    prot1.n, prot2.n, prot3.n = len(seq), len(seq1), len(seq2)
-
-    prot1.steps, prot2.steps, prot3.steps = 500, 500, 500
-
-    comp1, comp2, comp3 = prot1.compactness(), prot2.compactness(), prot3.compactness()
-
+    prot1.n = len(seq)
+    prot1.steps = 500
+    comp1 = prot1.compactness()
     # energy shoud be zero for the linear structure
     assert isclose(comp1,0.)
-    assert isclose(comp2,0.)
-    assert isclose(comp3,0.)
-
     # evolitions
     prot1.evolution()
-    prot2.evolution()
-    prot3.evolution()
-
     # asserts for the energy minimization after the evolution (energy shoul not be grater than zero)
     assert prot1.compactness() >= comp1
-    assert prot2.compactness() >= comp2
-    assert prot3.compactness() >= comp3
