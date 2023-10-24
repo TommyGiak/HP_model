@@ -10,7 +10,7 @@ from math import isclose, sqrt
 import hypothesis
 
 configuration = configparser.ConfigParser()
-configuration.read('config.txt')
+configuration.read('config_test.txt')
 
 config = utils.Configuration(configuration)
 
