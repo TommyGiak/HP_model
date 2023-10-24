@@ -16,21 +16,7 @@ configuration.read('config_test.txt')
 config = utils.Configuration(configuration)
 
 
-correct_structures = [[[0,0],[0,1],[1,1],[1,2],[1,3],[2,3],[2,2],[2,1],[2,0],[2,-1],[1,-1],[0,-1],[-1,-1]],                    
-                      [[0,0],[0,1],[1,1],[1,2],[1,3],[2,3],[2,2],[2,1],[2,0],[2,-1],[2,-2],[2,-3],[2,-4]],
-                      [[0,0],[0,1],[1,1],[1,2],[1,3],[2,3]],
-                      [[0,0],[1,0],[1,1],[1,2],[1,3],[2,3]],
-                      [[0,0],[0,-1],[1,-1],[1,-2],[1,-3],[2,-3]],
-                      [[0,0],[1,0],[2,0],[2,1],[2,2],[2,3]],
-                      [[0,0],[-1,0],[-1,1],[-1,2],[-1,3],[-2,3]],
-                      [[0,0],[0,1],[1,1],[1,2],[1,3],[2,3]],
-                      [[0,0],[1,0],[1,1],[1,2],[1,3]],
-                      [[0,0],[0,-1],[1,-1],[1,-2],[1,-3]],
-                      [[0,0],[1,0],[2,0],[2,1],[2,2]],
-                      [[0,0],[-1,0],[-1,1]],
-                      [[0,0],[1,0],[1,1],[1,2]],
-                      [[0,0],[0,-1],[1,-1],[1,-2]],
-                      [[0,0],[1,0],[2,0],[2,1]]]
+correct_structure = [[0,0],[0,1],[1,1],[1,2],[1,3],[2,3],[2,2],[2,1],[2,0],[2,-1],[1,-1],[0,-1],[-1,-1]]
 
 seq = 'HPPHHPHPHPHHP'
 seq1 = 'HHHPHPHPPPPPHPHPHPHHPHHPHPHHPHPPH'
@@ -47,7 +33,7 @@ wrong_str_skip_step_linear = [[0,0],[1,0],[3,0],[2,1],[2,2],[2,3]]
 wrong_str_return_point = [[0,0],[-1,0],[-1,1],[-1,2],[-1,1],[0,1]]
 
 
-def test_is_valid_struct_when_correct(structures = correct_structures):
+def test_is_valid_struct_when_correct(structure = correct_structure):
     '''
     Test the is_valid_struct when a correct structure is given, a list of correct structures are given in 
     the first part of the file.
@@ -57,8 +43,7 @@ def test_is_valid_struct_when_correct(structures = correct_structures):
     THEN: I expect a True response from the function
     '''
     
-    for struct in structures:
-        assert utils.is_valid_struct(struct)
+    assert utils.is_valid_struct(structure)
     
     
 def test_is_valid_struct_when_wrong_double_point(structure = wrong_str_double_point):
@@ -271,7 +256,7 @@ def test_energy_computation():
     '''
     prot1 = p.Protein(config)
     prot1.seq = seq
-    prot1.struct = correct_structures[0]
+    prot1.struct = correct_structure
     prot1.n = len(seq)
     assert isclose(prot1.energy(), -2.)
 
@@ -301,7 +286,7 @@ def test_get_neig_composite():
     '''
     prot = p.Protein(config)
     prot.seq = seq
-    prot.struct = correct_structures[0]
+    prot.struct = correct_structure
     prot.n = len(seq)
     neig = ['H','','P','H','','','H','P','','','','H','']
     for i in range(prot.n):
@@ -338,7 +323,7 @@ def test_random_fold_valid_struc_composite():
     n = 1000
     prot = p.Protein(config)
     prot.seq = seq
-    prot.struct = correct_structures[0]
+    prot.struct = correct_structure
     prot.n = len(seq)
     for i in range(n):
         prot.struct = prot.random_fold()
@@ -353,15 +338,14 @@ def test_tail_fold_valid_struct_1():
     WHEN: I want to fold the protein
     THEN: I expect a valid protein structure
     '''
-    for struct in correct_structures:
-        tail = struct[1:]
-        x,y = tail[0]
-        for i,mon in enumerate(tail): # shifting the tail start in [0,0] for the folding
-                tail[i] = [mon[0]-x, mon[1]-y]
-        previous = struct[0] # recording the prev monomer
-        previous = [previous[0]-x, previous[1]-y]
-        
-        assert utils.is_valid_struct(utils.tail_fold(tail, 1, previous))
+    tail = correct_structure[1:]
+    x,y = tail[0]
+    for i,mon in enumerate(tail): # shifting the tail start in [0,0] for the folding
+            tail[i] = [mon[0]-x, mon[1]-y]
+    previous = correct_structure[0] # recording the prev monomer
+    previous = [previous[0]-x, previous[1]-y]
+    
+    assert utils.is_valid_struct(utils.tail_fold(tail, 1, previous))
 
 def test_tail_fold_valid_struct_2():
     '''
@@ -371,15 +355,14 @@ def test_tail_fold_valid_struct_2():
     WHEN: I want to fold the protein
     THEN: I expect a valid protein structure
     '''
-    for struct in correct_structures:
-        tail = struct[1:]
-        x,y = tail[0]
-        for i,mon in enumerate(tail): # shifting the tail start in [0,0] for the folding
-                tail[i] = [mon[0]-x, mon[1]-y]
-        previous = struct[0] # recording the prev monomer
-        previous = [previous[0]-x, previous[1]-y]
+    tail = correct_structure[1:]
+    x,y = tail[0]
+    for i,mon in enumerate(tail): # shifting the tail start in [0,0] for the folding
+            tail[i] = [mon[0]-x, mon[1]-y]
+    previous = correct_structure[0] # recording the prev monomer
+    previous = [previous[0]-x, previous[1]-y]
         
-        assert utils.is_valid_struct(utils.tail_fold(tail, 2, previous))
+    assert utils.is_valid_struct(utils.tail_fold(tail, 2, previous))
 
 def test_tail_fold_valid_struct_3():
     '''
@@ -389,15 +372,14 @@ def test_tail_fold_valid_struct_3():
     WHEN: I want to fold the protein
     THEN: I expect a valid protein structure
     '''
-    for struct in correct_structures:
-        tail = struct[1:]
-        x,y = tail[0]
-        for i,mon in enumerate(tail): # shifting the tail start in [0,0] for the folding
-                tail[i] = [mon[0]-x, mon[1]-y]
-        previous = struct[0] # recording the prev monomer
-        previous = [previous[0]-x, previous[1]-y]
-        
-        assert utils.is_valid_struct(utils.tail_fold(tail, 3, previous))
+    tail = correct_structure[1:]
+    x,y = tail[0]
+    for i,mon in enumerate(tail): # shifting the tail start in [0,0] for the folding
+            tail[i] = [mon[0]-x, mon[1]-y]
+    previous = correct_structure[0] # recording the prev monomer
+    previous = [previous[0]-x, previous[1]-y]
+    
+    assert utils.is_valid_struct(utils.tail_fold(tail, 3, previous))
             
 def test_tail_fold_valid_struct_4():
     '''
@@ -407,15 +389,14 @@ def test_tail_fold_valid_struct_4():
     WHEN: I want to fold the protein
     THEN: I expect a valid protein structure
     '''
-    for struct in correct_structures:
-        tail = struct[1:]
-        x,y = tail[0]
-        for i,mon in enumerate(tail): # shifting the tail start in [0,0] for the folding
-                tail[i] = [mon[0]-x, mon[1]-y]
-        previous = struct[0] # recording the prev monomer
-        previous = [previous[0]-x, previous[1]-y]
-        
-        assert utils.is_valid_struct(utils.tail_fold(tail, 4, previous))
+    tail = correct_structure[1:]
+    x,y = tail[0]
+    for i,mon in enumerate(tail): # shifting the tail start in [0,0] for the folding
+            tail[i] = [mon[0]-x, mon[1]-y]
+    previous = correct_structure[0] # recording the prev monomer
+    previous = [previous[0]-x, previous[1]-y]
+    
+    assert utils.is_valid_struct(utils.tail_fold(tail, 4, previous))
 
 def test_tail_fold_valid_struct_5():
     '''
@@ -425,15 +406,14 @@ def test_tail_fold_valid_struct_5():
     WHEN: I want to fold the protein
     THEN: I expect a valid protein structure
     '''
-    for struct in correct_structures:
-        tail = struct[1:]
-        x,y = tail[0]
-        for i,mon in enumerate(tail): # shifting the tail start in [0,0] for the folding
-                tail[i] = [mon[0]-x, mon[1]-y]
-        previous = struct[0] # recording the prev monomer
-        previous = [previous[0]-x, previous[1]-y]
-        
-        assert utils.is_valid_struct(utils.tail_fold(tail, 5, previous))
+    tail = correct_structure[1:]
+    x,y = tail[0]
+    for i,mon in enumerate(tail): # shifting the tail start in [0,0] for the folding
+            tail[i] = [mon[0]-x, mon[1]-y]
+    previous = correct_structure[0] # recording the prev monomer
+    previous = [previous[0]-x, previous[1]-y]
+    
+    assert utils.is_valid_struct(utils.tail_fold(tail, 5, previous))
 
 def test_tail_fold_valid_struct_6():
     '''
@@ -443,15 +423,14 @@ def test_tail_fold_valid_struct_6():
     WHEN: I want to fold the protein
     THEN: I expect a valid protein structure
     '''
-    for struct in correct_structures:
-        tail = struct[1:]
-        x,y = tail[0]
-        for i,mon in enumerate(tail): # shifting the tail start in [0,0] for the folding
-                tail[i] = [mon[0]-x, mon[1]-y]
-        previous = struct[0] # recording the prev monomer
-        previous = [previous[0]-x, previous[1]-y]
-        
-        assert utils.is_valid_struct(utils.tail_fold(tail, 6, previous))
+    tail = correct_structure[1:]
+    x,y = tail[0]
+    for i,mon in enumerate(tail): # shifting the tail start in [0,0] for the folding
+            tail[i] = [mon[0]-x, mon[1]-y]
+    previous = correct_structure[0] # recording the prev monomer
+    previous = [previous[0]-x, previous[1]-y]
+    
+    assert utils.is_valid_struct(utils.tail_fold(tail, 6, previous))
 
 def test_tail_fold_valid_struct_7():
     '''
@@ -461,15 +440,14 @@ def test_tail_fold_valid_struct_7():
     WHEN: I want to fold the protein
     THEN: I expect a valid protein structure
     '''
-    for struct in correct_structures:
-        tail = struct[1:]
-        x,y = tail[0]
-        for i,mon in enumerate(tail): # shifting the tail start in [0,0] for the folding
-                tail[i] = [mon[0]-x, mon[1]-y]
-        previous = struct[0] # recording the prev monomer
-        previous = [previous[0]-x, previous[1]-y]
-        
-        assert utils.is_valid_struct(utils.tail_fold(tail, 7, previous))
+    tail = correct_structure[1:]
+    x,y = tail[0]
+    for i,mon in enumerate(tail): # shifting the tail start in [0,0] for the folding
+            tail[i] = [mon[0]-x, mon[1]-y]
+    previous = correct_structure[0] # recording the prev monomer
+    previous = [previous[0]-x, previous[1]-y]
+    
+    assert utils.is_valid_struct(utils.tail_fold(tail, 7, previous))
 
 
 def test_tail_fold_correct_length_1():
@@ -480,10 +458,9 @@ def test_tail_fold_correct_length_1():
     WHEN: I want to fold the protein
     THEN: I expect the structure length unchanged
     '''
-    for struct in correct_structures:
-        l = len(struct)
-        l_new = len(utils.tail_fold(struct,1,[0,0]))
-        assert l == l_new
+    l = len(correct_structure)
+    l_new = len(utils.tail_fold(correct_structure,1,[0,0]))
+    assert l == l_new
 
 def test_tail_fold_correct_length_2():
     '''
@@ -493,10 +470,9 @@ def test_tail_fold_correct_length_2():
     WHEN: I want to fold the protein
     THEN: I expect the structure length unchanged
     '''
-    for struct in correct_structures:
-        l = len(struct)
-        l_new = len(utils.tail_fold(struct,2,[0,0]))
-        assert l == l_new
+    l = len(correct_structure)
+    l_new = len(utils.tail_fold(correct_structure,2,[0,0]))
+    assert l == l_new
 
 def test_tail_fold_correct_length_3():
     '''
@@ -506,10 +482,9 @@ def test_tail_fold_correct_length_3():
     WHEN: I want to fold the protein
     THEN: I expect the structure length unchanged
     '''
-    for struct in correct_structures:
-        l = len(struct)
-        l_new = len(utils.tail_fold(struct,3,[0,0]))
-        assert l == l_new
+    l = len(correct_structure)
+    l_new = len(utils.tail_fold(correct_structure,3,[0,0]))
+    assert l == l_new
 
 def test_tail_fold_correct_length_4():
     '''
@@ -519,10 +494,9 @@ def test_tail_fold_correct_length_4():
     WHEN: I want to fold the protein
     THEN: I expect the structure length unchanged
     '''
-    for struct in correct_structures:
-        l = len(struct)
-        l_new = len(utils.tail_fold(struct,4,[0,0]))
-        assert l == l_new
+    l = len(correct_structure)
+    l_new = len(utils.tail_fold(correct_structure,4,[0,0]))
+    assert l == l_new
 
 def test_tail_fold_correct_length_5():
     '''
@@ -532,10 +506,9 @@ def test_tail_fold_correct_length_5():
     WHEN: I want to fold the protein
     THEN: I expect the structure length unchanged
     '''
-    for struct in correct_structures:
-        l = len(struct)
-        l_new = len(utils.tail_fold(struct,5,[0,0]))
-        assert l == l_new
+    l = len(correct_structure)
+    l_new = len(utils.tail_fold(correct_structure,5,[0,0]))
+    assert l == l_new
 
 def test_tail_fold_correct_length_6():
     '''
@@ -545,10 +518,9 @@ def test_tail_fold_correct_length_6():
     WHEN: I want to fold the protein
     THEN: I expect the structure length unchanged
     '''
-    for struct in correct_structures:
-        l = len(struct)
-        l_new = len(utils.tail_fold(struct,6,[0,0]))
-        assert l == l_new
+    l = len(correct_structure)
+    l_new = len(utils.tail_fold(correct_structure,6,[0,0]))
+    assert l == l_new
 
 def test_tail_fold_correct_length_7():
     '''
@@ -558,10 +530,9 @@ def test_tail_fold_correct_length_7():
     WHEN: I want to fold the protein
     THEN: I expect the structure length unchanged
     '''
-    for struct in correct_structures:
-        l = len(struct)
-        l_new = len(utils.tail_fold(struct,7,[0,0]))
-        assert l == l_new
+    l = len(correct_structure)
+    l_new = len(utils.tail_fold(correct_structure,7,[0,0]))
+    assert l == l_new
   
             
 def test_diagonal_move_length():
@@ -572,17 +543,16 @@ def test_diagonal_move_length():
     WHEN: I want to move the first monomer on a diagonal to fold the protein
     THEN: the structure length should not change
     '''
-    for struct in correct_structures:
-        tail = struct[1:]
-        x,y = tail[0]
-        for i,mon in enumerate(tail): # shifting the tail start in [0,0] for the folding
-                tail[i] = [mon[0]-x, mon[1]-y]
-        previous = struct[0] # recording the prev monomer
-        previous = [previous[0]-x, previous[1]-y]
+    tail = correct_structure[1:]
+    x,y = tail[0]
+    for i,mon in enumerate(tail): # shifting the tail start in [0,0] for the folding
+            tail[i] = [mon[0]-x, mon[1]-y]
+    previous = correct_structure[0] # recording the prev monomer
+    previous = [previous[0]-x, previous[1]-y]
 
-        l = len(tail)
-        assert l == len(utils.diagonal_move(tail,previous))
-      
+    l = len(tail)
+    assert l == len(utils.diagonal_move(tail,previous))
+    
 
 def test_diagonal_move_equal_struct():
     '''
@@ -592,9 +562,8 @@ def test_diagonal_move_equal_struct():
     WHEN: I want to move the first monomer on a diagonal to fold the protein
     THEN: the structure starting from the second monomer should not change
     '''
-    for struct in correct_structures:
-        new_struct = utils.diagonal_move(struct,[0,0])
-        assert new_struct[1:] == struct[1:]
+    new_struct = utils.diagonal_move(correct_structure,[0,0])
+    assert new_struct[1:] == correct_structure[1:]
         
     
 def test_diagonal_move_first_mon_move():
