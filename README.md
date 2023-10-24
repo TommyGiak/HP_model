@@ -85,6 +85,7 @@ The repository contain these pyhton files:
 - _plots.py_: contains funtion to plot the results
 - _test.py_: contains the test functions to test the code
 - _config.txt_: contains the information needed by the program as input
+- _config_test.txt_: contains the information to start the test of the application; just to be sure to don't have problems, I suggest you to don't modify it. To run the test is sufficient to write from terminal, inside the cloned repository, "pytest test.py" (pytest is required).
 
 ## Some theory
 
