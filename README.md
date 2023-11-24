@@ -118,8 +118,8 @@ __N.B.__ I approximate $k_b = 1$ for semplicity so, in this application, when ap
 As example I used a simulation for a the protein sequence of Myoglobin (Camelus dromedarius) taken from [here](https://www.ncbi.nlm.nih.gov/protein/KAB1270346.1?report=fasta).
 I simulated 100000 folding steps as indicated in the _config.txt_ file.
 I started the simulation with $T = 2.0$ and I used annealing.\
-The whole process took $\sim 12$ min, a quite long time since the protein il quite long as the folding steps.\
-The results are present also in the [data folder](https://github.com/TommyGiak/HP_model/tree/main/data), anyway, starting with a linear structure, i obtained the following results:
+The whole process took $\sim 12$ min, quite a long time since the protein il relatively long and the folding steps may are more than necessary. In any case runtime depend on the PC that you are using.\
+The results are also present in the [data folder](https://github.com/TommyGiak/HP_model/tree/main/data), anyway, starting with a linear structure, I obtained the following results:
 
 - energy minimum:
 <img src="./data/min_energy_view.png" alt="energy minimum" width="450"/>
@@ -136,5 +136,5 @@ The results are present also in the [data folder](https://github.com/TommyGiak/H
 - compactness evolution profile:
 <img src="./data/compactness_evolution.png" alt="compactness evolution" width="450"/>
 
-It is easy to see from the plots how the energy and the compactness stabilize when the temperature $T$ reach $\sim0.5$.
+It is easy to see from the plots how the energy and the compactness stabilize when the temperature $T$ reach $\sim 0.5$.
 To notice also that lowest energy does not correspond to highest compactness.
