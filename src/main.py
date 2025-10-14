@@ -27,13 +27,13 @@ if __name__ == '__main__':
     print(f'It took {time.time() - start:.3f} seconds')
     print('---------------')
 
-    plots.view(protein, save=False, tit='Final configuration')
+    plots.view(protein, save=True, tit='Final configuration')
     plots.view_min_en(protein)
     plots.view_max_comp(protein)
-    plots.plot_energy(protein)
-    plots.plot_compactness(protein)
+    plots.plot_energy(protein, save=True)
+    plots.plot_compactness(protein, save=True)
 
     # plt.show()
 
     if config.gif:
-        plots.create_gif(protein=protein)
+        plots.create_gif(protein)

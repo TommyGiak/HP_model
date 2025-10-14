@@ -79,22 +79,28 @@ class Protein:
     def evolution(self) -> None:
         """Let the system evolve for `self.steps` steps using the Metropolis algorithm."""
         self.print_config()
-        temp = self.starting_temperature
-        annealing_coef = -temp / self.steps
+
+        temperature = self.starting_temperature
+        annealing_coefficient = -temperature / self.steps
 
         for step in range(self.steps):
             utils.progress_bar(step + 1, self.steps)
 
             # Annealing temperature decrease
-            if self.annealing and temp > 0.002:
-                temp = annealing_coef * (step - self.steps)
+            if self.annealing and temperature > 0.002:
+                temperature = annealing_coefficient * (step - self.steps)
 
-            self._step_metropolis(temp)
+            self._step_metropolis(temperature)
 
             # Save temperature and GIF frame
-            self.temperature_evolution.append(temp)
+            self.temperature_evolution.append(temperature)
             if self.gif and (step % max(1, self.steps // 100) == 0):
                 self.gif_struct.append([coord.copy() for coord in self.struct])
+
+            # No skipping
+            """if self.gif:
+                # Save every frame (no skipping)
+                self.gif_struct.append([coord.copy() for coord in self.struct])"""
 
     def _step_metropolis(self, temperature: float) -> None:
         """Perform a single step of the Metropolis evolution."""

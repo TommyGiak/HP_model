@@ -199,7 +199,6 @@ def create_gif(protein):
     writer = PillowWriter(fps=2)
 
     with writer.saving(fig, '../data/evo.gif', 200):
-
         for i, structure in enumerate(protein.gif_struct):
             utils.progress_bar(i + 1, len(protein.gif_struct))
 

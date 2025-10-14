@@ -9,7 +9,7 @@ structure:
 simulation:
   folding_steps: 5000
   annealing: true
-  temperature: 2.0
+  temperature: 5.0
 
 plot:
   create_gif: true
