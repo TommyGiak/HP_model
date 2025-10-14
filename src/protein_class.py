@@ -84,7 +84,7 @@ class Protein():
             utils.progress_bar(i + 1, self.steps)  # print the progress bar of the evolution
 
             if self.annealing and T > 0.002: T = m * (
-                        i - self.steps)  # temperature decrease linearly w.r.t. the steps, if annealing is True
+                    i - self.steps)  # temperature decrease linearly w.r.t. the steps, if annealing is True
             en = self.energy()  # current protein energy
             init_str = self.struct  # current protein structure
             self.struct = self.random_fold()  # new structure is generated

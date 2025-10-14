@@ -4,15 +4,20 @@
 """
 
 import configparser
+import os
 import random
+import sys
 
 from math import isclose, sqrt
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
 import protein_class as p
 import utils
 
 configuration = configparser.ConfigParser()
-configuration.read('config_test.txt')
+config_path = os.path.join(os.path.dirname(__file__), 'config_test.txt')
+configuration.read(config_path)
 
 config = utils.Configuration(configuration)
 
