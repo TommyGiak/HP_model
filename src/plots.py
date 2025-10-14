@@ -106,7 +106,7 @@ def view_max_comp(protein, save=True):
         plt.savefig("../data/max_compactness_view.png", format="png", bbox_inches="tight", dpi=200)
 
 
-def plot_energy(protein, avg: int = 1, save=True) -> None:
+def plot_energy(protein, avg: int = 10, save=True) -> None:
     '''
     plot the energy evolution of the system.
     As first argument the protein class instance of the desired protein is needed.
@@ -115,7 +115,7 @@ def plot_energy(protein, avg: int = 1, save=True) -> None:
     Parameters
     ----------
     avg : int, optional
-        The energy will be averaged every avg steps. The default is 1.
+        The energy will be averaged every avg steps. The default is 10.
 
     Returns
     -------
@@ -145,7 +145,7 @@ def plot_energy(protein, avg: int = 1, save=True) -> None:
         plt.savefig("../data/energy_evolution.png", format="png", bbox_inches="tight", dpi=200)
 
 
-def plot_compactness(protein, avg: int = 1, save=True) -> None:
+def plot_compactness(protein, avg: int = 10, save=True) -> None:
     '''
     plot the compactness evolution of the system.
     As first argument the protein class instance of the desired protein is needed.
@@ -154,7 +154,7 @@ def plot_compactness(protein, avg: int = 1, save=True) -> None:
     Parameters
     ----------
     avg : int, optional
-        The compactness will be averaged every avg steps. The default is 1.
+        The compactness will be averaged every avg steps. The default is 10.
 
     Returns
     -------

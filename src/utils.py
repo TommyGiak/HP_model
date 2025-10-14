@@ -1,7 +1,6 @@
 """
 @author: Tommaso Giacometti
 """
-import json
 
 from math import isclose
 
@@ -104,9 +103,6 @@ def get_dist(coord1: list[float], coord2: list[float]) -> float:
     dx = coord1[0] - coord2[0]
     dy = coord1[1] - coord2[1]
     return sqrt(dx ** 2 + dy ** 2)
-
-
-import random
 
 
 def diagonal_move(struct: list[list[int]], previous: list[int]) -> list[list[int]]:
@@ -250,50 +246,39 @@ def progress_bar(progress: int, total: int) -> None:
         print()  # newline after completion
 
 
+import yaml
+import random
+
+
 class Configuration:
     """
-    Class to parse and store parameters from an input configuration file.
-
-    Parameters
-    ----------
-    config : ConfigParser
-        ConfigParser object of the input file.
-
-    Attributes
-    ----------
-    seq : str
-        Protein sequence.
-    folds : int
-        Number of folding steps.
-    use_struct : bool
-        Whether to use the structure provided in the config file.
-    annealing : bool
-        Whether to use annealing.
-    temperature : float
-        Starting temperature.
-    struct : list, optional
-        Initial structure, if use_struct is True.
-    gif : bool
-        Whether to create a GIF of the folding.
-    seed : int
-        Random seed.
+    Class to parse and store parameters from a YAML configuration file.
     """
 
-    def __init__(self, config) -> None:
-        self.seq = config['SEQUENCE']['sequence']
-        self.folds = config['PROCESS'].getint('folding_steps')
-        self.use_struct = config['optional'].getboolean('use_structure')
-        self.annealing = config['optional'].getboolean('annealing')
-        self.temperature = config['optional'].getfloat('T')
-        self.struct = None
+    def __init__(self, filename: str) -> None:
+        with open(filename, 'r') as f:
+            config = yaml.safe_load(f)
 
-        if self.use_struct:
-            struct_str = config['optional']['structure']
-            self.struct = json.loads(struct_str)
+        # Sequence
+        self.seq = config['sequence']
 
-        self.gif = config['optional'].getboolean('create_gif')
+        # Structure options
+        structure_cfg = config.get('structure_options', {})
+        self.use_struct = structure_cfg.get('use_structure')
+        self.struct = structure_cfg.get('coordinates') if self.use_struct else None
 
-        seed = config['random_seed']['seed']
-        if seed == 'None':
-            seed = random.randint(0, 10000)
-        self.seed = int(seed)
+        # Simulation options
+        sim_cfg = config.get('simulation', {})
+        self.folds = sim_cfg.get('folding_steps')
+        self.annealing = sim_cfg.get('annealing')
+        self.temperature = sim_cfg.get('temperature')
+
+        # Plot options
+        plot_cfg = config.get('plot', {})
+        self.gif = plot_cfg.get('create_gif')
+
+        # Seed
+        seed_val = config.get('seed', None)
+        if seed_val is None or seed_val == 'None':
+            seed_val = random.randint(0, 10000)
+        self.seed = int(seed_val)

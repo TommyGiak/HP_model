@@ -27,6 +27,13 @@ class Protein:
         self._initialize_parameters(config)
         self._initialize_tracking()
 
+    def print_config(self) -> None:
+        """Print configuration options selected by the user."""
+        print(f"Sequence: {self.sequence}")
+        print(f"Folding steps: {self.steps}")
+        print(f"Annealing enabled: {self.annealing}")
+        print(f"Starting temperature: {self.starting_temperature}")
+
     def _initialize_sequence(self, config: utils.Configuration) -> None:
         """Initialize protein sequence, converting to HP if needed."""
         print("Sequence:", config.seq)
@@ -34,7 +41,7 @@ class Protein:
             self.sequence = config.seq
         else:
             self.sequence = utils.hp_sequence_transform(config.seq)
-            print("HP representation:", self.sequence)
+            # print("HP representation:", self.sequence)
         self.sequence_length = len(self.sequence)
 
     def _initialize_structure(self, config: utils.Configuration) -> None:
@@ -71,6 +78,7 @@ class Protein:
 
     def evolution(self) -> None:
         """Let the system evolve for `self.steps` steps using the Metropolis algorithm."""
+        self.print_config()
         temp = self.starting_temperature
         annealing_coef = -temp / self.steps
 

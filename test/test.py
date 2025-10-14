@@ -2,7 +2,6 @@
 @author: Tommaso Giacometti
 """
 
-import configparser
 import os
 import random
 import sys
@@ -14,11 +13,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src'
 import protein_class as p
 import utils
 
-configuration = configparser.ConfigParser()
-config_path = os.path.join(os.path.dirname(__file__), 'config_test.txt')
-configuration.read(config_path)
-
-config = utils.Configuration(configuration)
+config_path = os.path.join(os.path.dirname(__file__), 'config_test.yaml')
+config = utils.Configuration(config_path)
 
 correct_structure = [[0, 0], [0, 1], [1, 1], [1, 2], [1, 3], [2, 3], [2, 2], [2, 1], [2, 0], [2, -1], [1, -1], [0, -1],
                      [-1, -1]]
