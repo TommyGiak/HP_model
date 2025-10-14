@@ -164,19 +164,19 @@ are more than necessary. In any case runtime depend on the PC that you are using
 The results are also present in the [data folder](https://github.com/TommyGiak/HP_model/tree/main/data), anyway,
 starting with a linear structure, I obtained the following results:
 
-- energy minimum:
+- energy minimum:\
   <img src="./data/min_energy_view.png" alt="energy minimum" width="450"/>
 
-- compactness maximum:
+- compactness maximum:\
   <img src="./data/max_compactness_view.png" alt="compactness maximum" width="450"/>
 
-- evolution process:
+- evolution process:\
   <img src="./data/evo.gif" alt="evolution" width="450"/>
 
-- energy evolution profile:
+- energy evolution profile:\
   <img src="./data/energy_evolution.png" alt="energy evolution" width="450"/>
 
-- compactness evolution profile:
+- compactness evolution profile:\
   <img src="./data/compactness_evolution.png" alt="compactness evolution" width="450"/>
 
 It is easy to see from the plots how the energy and the compactness stabilize when the temperature $T$ reach $\sim 0.5$.
