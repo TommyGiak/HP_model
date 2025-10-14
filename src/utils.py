@@ -1,282 +1,299 @@
-# -*- coding: utf-8 -*-
 """
 @author: Tommaso Giacometti
 """
 import json
-import random
 
-from math import sqrt, isclose
+from math import isclose
 
 
-def is_valid_struct(struct: list) -> bool:
-    '''
-    Check if the structure inserted is valid: is SAW (self avoid walk) and distances between consecutive elements are 1.
+def is_valid_struct(struct: list[list[float]]) -> bool:
+    """
+    Check if the given protein structure is valid:
+    - Self-avoiding walk (no overlapping monomers)
+    - Distance between consecutive monomers is 1
 
     Parameters
     ----------
-    struct : list
-        Structur of the protein containing x and y coordinate in a list.
+    struct : list[list[float]]
+        Structure of the protein containing x and y coordinates for each monomer.
 
     Returns
     -------
     bool
-        True if the structure is valid, False if is not.
-    '''
-    unique_struct = []  # counter of the monomer positions
-    n = len(struct)  # length of the sequence
+        True if the structure is valid, False otherwise.
+    """
+    seen = set()  # positions already visited
 
-    for i in range(n):
-        if struct[i] in unique_struct:
+    for i, pos in enumerate(struct):
+        pos_tuple = tuple(pos)  # convert to tuple to store in set
+        if pos_tuple in seen:
             return False
-        else:
-            unique_struct.append(struct[i])
+        seen.add(pos_tuple)
 
-        if (i < n - 1):  # check distance between the monomer i and the following one
-            if not isclose(get_dist(struct[i], struct[i + 1]), 1):
+        # check distance to next monomer
+        if i < len(struct) - 1:
+            if not isclose(get_dist(pos, struct[i + 1]), 1):
                 return False
 
     return True
 
 
-def is_valid_sequence(seq: str) -> bool:
-    '''
-    Check if the protein sequence contains only H and/or P and its lengths is almost 3.
+def is_valid_sequence(sequence: str) -> bool:
+    """
+    Check if the protein sequence contains only 'H' and/or 'P' and has a minimum length of 3.
 
     Parameters
     ----------
-    seq : str
-        The protein sequence (caps sensitive).
+    sequence : str
+        The protein sequence (case-sensitive).
 
     Returns
     -------
     bool
-        True if the sequence is valid, False if is not.
-    '''
-    if len(seq) < 3:
+        True if the sequence is valid, False otherwise.
+    """
+    if len(sequence) < 3:
         print('The sequence is too short. It must be at least 3.')
         return False
 
-    unique_c = set(seq)  # set of all the letters present in the sequence
+    allowed_chars = {'H', 'P'}
+    sequence_chars = set(sequence)
 
-    if len(unique_c) == 2:
-        if 'H' in unique_c and 'P' in unique_c:
-            return True
-    elif len(unique_c) == 1:
-        if 'H' in unique_c or 'P' in unique_c:
-            return True
-
-    return False  # if True is not returned yet, return Fasle since the sequence must be invalid
+    # Sequence is valid if all characters are in allowed set
+    return sequence_chars.issubset(allowed_chars)
 
 
-def linear_struct(seq: str) -> list:
-    '''
-    Create the linear structure of the length of the input sequence
+def linear_struct(seq: str) -> list[list[int]]:
+    """
+    Create a linear structure corresponding to the input sequence.
 
     Parameters
     ----------
     seq : str
-        Sequence which need a linear structure
-    
+        Sequence for which to create a linear structure.
+
     Returns
     -------
-    list : 
-        Linear structure
-    '''
-    struct = []
-
-    for i in range(len(seq)):
-        struct.append([i, 0])
-
-    print('\033[43mLinear initial structure assumed \033[0;0m')
-
+    list[list[int]]
+        Linear structure, where each monomer is positioned on the x-axis.
+    """
+    struct = [[i, 0] for i in range(len(seq))]
+    print("Linear initial structure assumed")
     return struct
 
 
-def get_dist(coord1: list, coord2: list) -> float:
-    '''
-    Compute the distance of two points in the lattice
+from math import sqrt
+
+
+def get_dist(coord1: list[float], coord2: list[float]) -> float:
+    """
+    Compute the Euclidean distance between two points in the lattice.
 
     Parameters
     ----------
-    coord1 : list
-        a and y coordinate in the lattice of the first monomer.
-    coord2 : list
-        a and y coordinate in the lattice of the second monomer.
+    coord1 : list[float]
+        [x, y] coordinates of the first monomer.
+    coord2 : list[float]
+        [x, y] coordinates of the second monomer.
 
     Returns
     -------
     float
-        Euclidean distance as a float.
-    '''
-    dist = sqrt((coord1[0] - coord2[0]) ** 2 + (coord1[1] - coord2[1]) ** 2)
-    return dist
+        Euclidean distance.
+    """
+    dx = coord1[0] - coord2[0]
+    dy = coord1[1] - coord2[1]
+    return sqrt(dx ** 2 + dy ** 2)
 
 
-def diagonal_move(struct: list, previous: list) -> list:
-    '''
-    Move the first monomer along a diagonal looking at the previous and following monomers in the sequence. \n
-    It is assumed that the protein structure starts in [0,0], so the coordinates of the surrounding monomers must have only zeros and ones. \n
-    This function is called only if the structure can accept a diagonal move (surrounding monomers not aligned).
+import random
+
+
+def diagonal_move(struct: list[list[int]], previous: list[int]) -> list[list[int]]:
+    """
+    Move the first monomer along a diagonal based on the previous and following monomers.
+    Assumes the protein structure starts at [0,0], so coordinates of surrounding monomers are 0 or 1.
+    Called only if a diagonal move is possible (surrounding monomers not aligned).
 
     Parameters
     ----------
-    struct : list
-        Protein structure starting in [0,0].
-    previous : list
-        x and y coordinates of the previous monomer shifted such that the first monomer of struct is [0,0]
+    struct : list[list[int]]
+        Protein structure starting at [0,0].
+    previous : list[int]
+        Coordinates [x, y] of the previous monomer, shifted such that the first monomer of struct is [0,0].
 
     Returns
     -------
-    list
-        The structure with the first monomer moved.
-    '''
-    case = random.randint(0, 1)  # random movement respect the second monomer
-    x_prev, y_prev = previous  # previous monomer coords
-    x_foll, y_foll = struct[1]  # following monomer coordinates
+    list[list[int]]
+        Updated structure with the first monomer moved.
+    """
+    # Randomly choose one of the two possible diagonal directions
+    case = random.randint(0, 1)
 
-    struct[0] = [x_prev + x_foll, y_prev + y_foll]
+    x_prev, y_prev = previous
+    x_next, y_next = struct[1]
+
+    # Move the first monomer along the diagonal
+    struct[0] = [x_prev + x_next, y_prev + y_next]
 
     return struct
 
 
-def tail_fold(struct: list, method: int, previous: list) -> list:
-    '''
-    Apply a rotation/inversion of symmetry at the sequence inserted.\n
-    7 methods are present:
+def tail_fold(struct: list[list[int]], method: int, previous: list[int]) -> list[list[int]]:
+    """
+    Apply a rotation/reflection or diagonal movement to the protein tail.
+
+    Methods:
         1: 90° clockwise rotation
         2: 90° anticlockwise rotation
-        3: 180° rotaion
-        4: x-axis refletion
+        3: 180° rotation
+        4: x-axis reflection
         5: y-axis reflection
-        6: 1 and 3 quadrant bisector symmetry
-        7: 2 and 4 quadrant bisector symmetry
-        8: movement on a digaonal of a random monomer
+        6: 1-3 quadrant bisector symmetry
+        7: 2-4 quadrant bisector symmetry
+        8: diagonal move of the first monomer
 
     Parameters
     ----------
-    struct : list
-        Structure of the sequence for which each element is the x and y coordinates of the monomer.
+    struct : list[list[int]]
+        Structure of the sequence, each element is [x, y] of a monomer.
     method : int
-        The method to apply to the structure.
-    previous : list
-        x and y coordinates of the previous monomer shifted such that the first monomer of struct is [0,0]
+        The transformation method to apply.
+    previous : list[int]
+        Coordinates [x, y] of the previous monomer (used for diagonal move).
 
     Returns
     -------
-    list
-        The structure transformed.
-    '''
-    new_tail = []
+    list[list[int]]
+        Transformed structure.
+    """
+    if method == 8:
+        return diagonal_move(struct, previous)
 
-    if method == 1:  # 90 rotation clockwise
-        for x, y in struct:
-            new_tail.append([y, -x])
-    if method == 2:  # 90 rotation anticlockwise
-        for x, y in struct:
-            new_tail.append([-y, x])
-    if method == 3:  # 180 rotation
-        for x, y in struct:
-            new_tail.append([-x, -y])
-    if method == 4:  # x-axis refletion
-        for x, y in struct:
-            new_tail.append([x, -y])
-    if method == 5:  # y-axis reflection
-        for x, y in struct:
-            new_tail.append([-x, y])
-    if method == 6:  # 1 and 3 quadrant bisector symmetry
-        for x, y in struct:
-            new_tail.append([-y, -x])
-    if method == 7:  # 2 and 4 quadrant bisector symmetry
-        for x, y in struct:
-            new_tail.append([y, x])
-    if method == 8:  # movement on the digonal
-        new_tail = diagonal_move(struct, previous)
+    # Dictionary mapping methods to lambda transformations
+    transforms = {
+        1: lambda x, y: [y, -x],
+        2: lambda x, y: [-y, x],
+        3: lambda x, y: [-x, -y],
+        4: lambda x, y: [x, -y],
+        5: lambda x, y: [-x, y],
+        6: lambda x, y: [-y, -x],
+        7: lambda x, y: [y, x]
+    }
 
+    transform = transforms.get(method)
+    if transform is None:
+        raise ValueError(f"Invalid method {method}. Must be an integer between 1 and 8.")
+
+    new_tail = [transform(x, y) for x, y in struct]
     return new_tail
 
 
 def hp_sequence_transform(seq: str) -> str:
-    '''
-    Transform a compleate sequence of 20 amino-acids into the HP sequence used in the code as model.
+    """
+    Transform a protein sequence of standard amino acids into the HP model sequence.
 
     Parameters
     ----------
-    seq : list
-        Sequence containing the 20 different amino-acids (RNDQEHKSTACGILMFPWYV), they must be upper case letters.
+    seq : str
+        Sequence containing the 20 standard amino acids (RNDQEHKSTACGILMFPWYV),
+        all must be uppercase letters.
 
     Returns
     -------
     str
-        The sequence converted into only H/P.  
-    '''
+        The sequence converted into H (hydrophobic) and P (polar).
 
-    polar = 'RNDQEHKST'  #  polar amino acids
-    hydr = 'ACGILMFPWYV'  # hydrophobic amino acids
+    Raises
+    ------
+    ValueError
+        If any amino acid in the sequence is not recognized.
+    """
+    polar = set('RNDQEHKST')  # polar amino acids
+    hydrophobic = set('ACGILMFPWYV')  # hydrophobic amino acids
 
-    hp_seq = ''  # string where to save the hp sequence
+    hp_seq = []
 
-    for amin in seq:
-        if amin in polar:
-            hp_seq += 'P'
-        elif amin in hydr:
-            hp_seq += 'H'
+    for aa in seq:
+        if aa in polar:
+            hp_seq.append('P')
+        elif aa in hydrophobic:
+            hp_seq.append('H')
         else:
-            raise ValueError(f'Amino acids {amin} not recognized')
+            raise ValueError(f"Amino acid '{aa}' not recognized")
 
-    return hp_seq
+    return ''.join(hp_seq)
 
 
 def progress_bar(progress: int, total: int) -> None:
-    '''
-    Print a progress bar on terminal when used inside a loop.
+    """
+    Print a progress bar on the terminal when used inside a loop.
 
     Parameters
     ----------
     progress : int
-        Enumeration during the loop to take counts of the progress during the process.
+        Current progress in the loop.
     total : int
-        Total number of steps for the evolution
+        Total number of steps for the evolution.
 
     Returns
     -------
     None
-        It only print on terminal the progress bar
-    '''
+        Only prints the progress bar to the terminal.
+    """
     percentage = progress / float(total) * 100
-    left = int(percentage / 10)  # number of  '#' to print (up to 10)
-    rigth = 10 - left  #  number of blank spaces to be included
-    bar = '[' + '#' * left + ' ' * rigth + ']'
-    print(f'\r{bar} {percentage:.2f}%', end='')
-    if progress == total:
-        print(f'\r{bar} {percentage:.2f}%')  # to have a newline after the process is finished
+    filled = int(percentage / 10)  # number of '#' to print (max 10)
+    empty = 10 - filled
+    bar = f"[{'#' * filled}{' ' * empty}]"
+    print(f"\r{bar} {percentage:.2f}%", end="")
+    if progress >= total:
+        print()  # newline after completion
 
 
-class Configuration():
-    '''
-    Class to save and ordinate the parameters given in the input file.
+class Configuration:
+    """
+    Class to parse and store parameters from an input configuration file.
 
     Parameters
     ----------
     config : ConfigParser
-        ConfigParser of the desired input file.
+        ConfigParser object of the input file.
 
-    Returns
-    -------
-    None.
-    '''
+    Attributes
+    ----------
+    seq : str
+        Protein sequence.
+    folds : int
+        Number of folding steps.
+    use_struct : bool
+        Whether to use the structure provided in the config file.
+    annealing : bool
+        Whether to use annealing.
+    temperature : float
+        Starting temperature.
+    struct : list, optional
+        Initial structure, if use_struct is True.
+    gif : bool
+        Whether to create a GIF of the folding.
+    seed : int
+        Random seed.
+    """
 
     def __init__(self, config) -> None:
-        self.seq = config['SEQUENCE']['sequence']  #  selected sequence
-        self.folds = config['PROCESS'].getint('folding_steps')  # number of folds
-        self.use_struct = config['optional'].getboolean(
-            'use_structure')  # if use the structure present in config file or use linear structure
-        self.annealing = config['optional'].getboolean('annealing')  # if use annealing or not
-        self.T = config['optional'].getfloat('T')  # starting temperature
+        self.seq = config['SEQUENCE']['sequence']
+        self.folds = config['PROCESS'].getint('folding_steps')
+        self.use_struct = config['optional'].getboolean('use_structure')
+        self.annealing = config['optional'].getboolean('annealing')
+        self.temperature = config['optional'].getfloat('T')
+        self.struct = None
+
         if self.use_struct:
-            struct = config['optional']['structure']  #  structure if TRUE in input file
-            self.struct = json.loads(struct)
+            struct_str = config['optional']['structure']
+            self.struct = json.loads(struct_str)
+
         self.gif = config['optional'].getboolean('create_gif')
-        self.seed = config['random_seed']['seed']  # get the random seed
-        if self.seed == 'None':  # generate a random seed if None
-            self.seed = random.randint(0, 10000)
-        self.seed = int(self.seed)  # convers the seed to int in any case
+
+        seed = config['random_seed']['seed']
+        if seed == 'None':
+            seed = random.randint(0, 10000)
+        self.seed = int(seed)

@@ -21,12 +21,12 @@ def view(protein: Protein, save=True, tit=None):
     y = []  # y coordinates of the monomers (ordered)
 
     fig, ax = plt.subplots()
-    for i in range(protein.n):
+    for i in range(protein.sequence_length):
         x.append(protein.struct[i][0])
         y.append(protein.struct[i][1])
     ax.plot(x, y, alpha=0.5)
     for i, coord in enumerate(protein.struct):
-        ax.scatter(x[i], y[i], marker='$' + protein.seq[i] + '$', s=20, color='red')
+        ax.scatter(x[i], y[i], marker='$' + protein.sequence[i] + '$', s=20, color='red')
     ax.set_xlim(min(x) - 6, max(x) + 6)
     ax.set_ylim(min(y) - 6, max(y) + 6)
     ax.grid(alpha=0.2)
@@ -35,7 +35,7 @@ def view(protein: Protein, save=True, tit=None):
     en = protein.energy()
     comp = protein.compactness()
     string = f'Energy: {en}'
-    string_comp = f'Compactness: {comp / (max(protein.comp_evo) + 10e-15):.2f}'  # the +10e-15 is used for numerical stability (avoid division by 0)
+    string_comp = f'Compactness: {comp / (max(protein.compactness_evolution) + 10e-15):.2f}'  # the +10e-15 is used for numerical stability (avoid division by 0)
     ax.text(0.01, 0.99, string, ha='left', va='top', transform=ax.transAxes)
     ax.text(0.01, 0.95, string_comp, ha='left', va='top', transform=ax.transAxes)
     plt.show(block=False)
@@ -53,19 +53,19 @@ def view_min_en(protein, save=True):
     y = []  # y coordinates of the monomers (ordered)
 
     fig, ax = plt.subplots()
-    for i in range(protein.n):
-        x.append(protein.min_en_struct[i][0])
-        y.append(protein.min_en_struct[i][1])
+    for i in range(protein.sequence_length):
+        x.append(protein.min_energy_structure[i][0])
+        y.append(protein.min_energy_structure[i][1])
     ax.plot(x, y, alpha=0.5)
     for i, coord in enumerate(protein.struct):
-        ax.scatter(x[i], y[i], marker='$' + protein.seq[i] + '$', s=20, color='red')
+        ax.scatter(x[i], y[i], marker='$' + protein.sequence[i] + '$', s=20, color='red')
     ax.set_xlim(min(x) - 6, max(x) + 6)
     ax.set_ylim(min(y) - 6, max(y) + 6)
     ax.grid(alpha=0.2)
-    en = min(protein.en_evo)
-    comp = protein.comp_evo[protein.en_evo.index(en)]
+    en = min(protein.energy_evolution)
+    comp = protein.compactness_evolution[protein.energy_evolution.index(en)]
     string = f'Energy: {en}'
-    string_comp = f'Compactness: {comp / (max(protein.comp_evo) + 10e-15):.2f}'  #  + 10e-15 for numerical stability (avoid division by 0)
+    string_comp = f'Compactness: {comp / (max(protein.compactness_evolution) + 10e-15):.2f}'  #  + 10e-15 for numerical stability (avoid division by 0)
     ax.text(0.01, 0.99, string, ha='left', va='top', transform=ax.transAxes)
     ax.text(0.01, 0.95, string_comp, ha='left', va='top', transform=ax.transAxes)
     ax.set_title('Min energy structure')
@@ -85,20 +85,20 @@ def view_max_comp(protein, save=True):
     y = []  # y coordinates of the monomers (ordered)
 
     fig, ax = plt.subplots()
-    for i in range(protein.n):
+    for i in range(protein.sequence_length):
         x.append(protein.max_comp_struct[i][0])
         y.append(protein.max_comp_struct[i][1])
     ax.plot(x, y, alpha=0.5)
     for i, coord in enumerate(protein.struct):
-        ax.scatter(x[i], y[i], marker='$' + protein.seq[i] + '$', s=20, color='red')
+        ax.scatter(x[i], y[i], marker='$' + protein.sequence[i] + '$', s=20, color='red')
     ax.set_xlim(min(x) - 6, max(x) + 6)
     ax.set_ylim(min(y) - 6, max(y) + 6)
     ax.grid(alpha=0.2)
     ax.set_title('Max compactness structure')
-    comp = max(protein.comp_evo)
-    en = protein.en_evo[protein.comp_evo.index(comp)]
+    comp = max(protein.compactness_evolution)
+    en = protein.energy_evolution[protein.compactness_evolution.index(comp)]
     string = f'Energy: {en}'
-    string_comp = f'Compactness: {comp / (max(protein.comp_evo) + 10e-15):.2f}'  # the +10e-15 is used for numerical stability (avoid division by 0)
+    string_comp = f'Compactness: {comp / (max(protein.compactness_evolution) + 10e-15):.2f}'  # the +10e-15 is used for numerical stability (avoid division by 0)
     ax.text(0.01, 0.99, string, ha='left', va='top', transform=ax.transAxes)
     ax.text(0.01, 0.95, string_comp, ha='left', va='top', transform=ax.transAxes)
     plt.show(block=False)
@@ -121,8 +121,8 @@ def plot_energy(protein, avg: int = 1, save=True) -> None:
     -------
     Plot
     '''
-    en_evo = np.array(protein.en_evo[1:].copy())
-    T = np.array(protein.T[1:])
+    en_evo = np.array(protein.energy_evolution[1:].copy())
+    T = np.array(protein.temperature_evolution[1:])
     x = np.arange(0, len(en_evo), avg)
     try:
         en_evo = en_evo.reshape(-1, avg).mean(axis=1)
@@ -160,9 +160,9 @@ def plot_compactness(protein, avg: int = 1, save=True) -> None:
     -------
     Plot
     '''
-    comp = np.array(protein.comp_evo[1:].copy())
+    comp = np.array(protein.compactness_evolution[1:].copy())
     comp = comp / max(comp)
-    T = np.array(protein.T[1:])
+    T = np.array(protein.temperature_evolution[1:])
     x = np.arange(0, len(comp), avg)
     try:
         comp = comp.reshape(-1, avg).mean(axis=1)
@@ -193,7 +193,6 @@ def create_gif(protein):
     The gif will not be shown with other plots but will be saved in the /data folder.
     To control its creation, set TRUE or FALSE for the variable 'create_gif' in the configuration file.
     '''
-    print('---------------')
     print('Creating gif...')
 
     fig, ax = plt.subplots()
@@ -211,7 +210,7 @@ def create_gif(protein):
             # Disegna legami e residui
             ax.plot(x, y, alpha=0.5)
             for j, coord in enumerate(structure):
-                ax.scatter(x[j], y[j], marker='$' + protein.seq[j] + '$', s=20, color='red')
+                ax.scatter(x[j], y[j], marker='$' + protein.sequence[j] + '$', s=20, color='red')
 
             # Imposta limiti e griglia
             ax.set_xlim(min(x) - 6, max(x) + 6)

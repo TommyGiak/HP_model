@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 @author: Tommaso Giacometti
 """
@@ -275,9 +274,9 @@ def test_energy_computation():
     THEN: I expect that tha energy is exactly -2
     '''
     prot1 = p.Protein(config)
-    prot1.seq = seq
+    prot1.sequence = seq
     prot1.struct = correct_structure
-    prot1.n = len(seq)
+    prot1.sequence_length = len(seq)
     assert isclose(prot1.energy(), -2.)
 
 
@@ -290,11 +289,11 @@ def test_get_neig_linear():
     THEN: I expect no neighbours for the monomers
     '''
     prot = p.Protein(config)
-    prot.seq = 'HPHPHPHPPPPHHHHPPP'
-    prot.struct = utils.linear_struct(prot.seq)
-    prot.n = len(prot.seq)
-    for i in range(prot.n):
-        assert prot.get_neig_of(i) == ''
+    prot.sequence = 'HPHPHPHPPPPHHHHPPP'
+    prot.struct = utils.linear_struct(prot.sequence)
+    prot.sequence_length = len(prot.sequence)
+    for i in range(prot.sequence_length):
+        assert prot.get_neighbors(i) == ''
 
 
 def test_get_neig_composite():
@@ -306,12 +305,12 @@ def test_get_neig_composite():
     THEN: I expect specific neighbours for each monomer
     '''
     prot = p.Protein(config)
-    prot.seq = seq
+    prot.sequence = seq
     prot.struct = correct_structure
-    prot.n = len(seq)
+    prot.sequence_length = len(seq)
     neig = ['H', '', 'P', 'H', '', '', 'H', 'P', '', '', '', 'H', '']
-    for i in range(prot.n):
-        assert prot.get_neig_of(i) == neig[i]
+    for i in range(prot.sequence_length):
+        assert prot.get_neighbors(i) == neig[i]
 
 
 def test_random_fold_valid_struc_linear():
@@ -325,9 +324,9 @@ def test_random_fold_valid_struc_linear():
     random.seed(4326748)
     n = 1000
     prot = p.Protein(config)
-    prot.seq = 'HPHPHPHPHPHHHHHPPHPHPHPPHHPPPPHHPP'
-    prot.struct = utils.linear_struct(prot.seq)
-    prot.n = len(prot.seq)
+    prot.sequence = 'HPHPHPHPHPHHHHHPPHPHPHPPHHPPPPHHPP'
+    prot.struct = utils.linear_struct(prot.sequence)
+    prot.sequence_length = len(prot.sequence)
     for i in range(n):
         prot.struct = prot.random_fold()
         assert utils.is_valid_struct(prot.struct)
@@ -344,9 +343,9 @@ def test_random_fold_valid_struc_composite():
     random.seed(7694)
     n = 1000
     prot = p.Protein(config)
-    prot.seq = seq
+    prot.sequence = seq
     prot.struct = correct_structure
-    prot.n = len(seq)
+    prot.sequence_length = len(seq)
     for i in range(n):
         prot.struct = prot.random_fold()
         assert utils.is_valid_struct(prot.struct)
@@ -669,9 +668,9 @@ def test_evolution_minimize_energy():
     '''
     # definition of the protein to test
     prot1 = p.Protein(config)
-    prot1.seq = seq
-    prot1.struct = utils.linear_struct(prot1.seq)
-    prot1.n = len(seq)
+    prot1.sequence = seq
+    prot1.struct = utils.linear_struct(prot1.sequence)
+    prot1.sequence_length = len(seq)
     prot1.steps = 500
     en1 = prot1.energy()
     # energy shoud be zero for the linear structure
@@ -692,9 +691,9 @@ def test_evolution_maximize_compactness():
     '''
     # definition of the protein to test
     prot1 = p.Protein(config)
-    prot1.seq = seq
-    prot1.struct = utils.linear_struct(prot1.seq)
-    prot1.n = len(seq)
+    prot1.sequence = seq
+    prot1.struct = utils.linear_struct(prot1.sequence)
+    prot1.sequence_length = len(seq)
     prot1.steps = 500
     comp1 = prot1.compactness()
     # energy shoud be zero for the linear structure

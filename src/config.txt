@@ -20,4 +20,4 @@ create_gif = TRUE
 
 # if is you don't want to indicate a specific seed insert 'seed = None' and a random one will be taken (it will be printed when the simulation starts)
 
-seed = 123
+seed = 42

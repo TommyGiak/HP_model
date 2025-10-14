@@ -1,244 +1,162 @@
-# -*- coding: utf-8 -*-
 """
+Protein folding simulation class
+Refactored for readability and modularity
 @author: Tommaso Giacometti
 """
 import random
+from typing import List
 
 import math
 
 import utils
 
 
-class Protein():
-    '''
-    Protein class that contains all the information on the protein and the function to makes the system evolve.\n
-    It takes as input the Configuration class present in the utils.py file.\n
-    The protein sequence can be also coded in the 20 different amino acids (RNDQEHKSTACGILMFPWYV), in this case it will
-    be automatically converted into the HP sequence considering the polar and hydrophobic amino acids,
-    but it must be setted in the configuration file given as input.
+class Protein:
+    """
+    Protein class containing all the information on the protein and methods to evolve the system.
 
     Parameters
     ----------
     config : utils.Configuration
-        Configuration class already assigned using the selected input file.
-    '''
+        Configuration class with parameters and initial structure.
+    """
 
     def __init__(self, config: utils.Configuration) -> None:
+        self._initialize_sequence(config)
+        self._initialize_structure(config)
+        self._initialize_parameters(config)
+        self._initialize_tracking()
 
-        if utils.is_valid_sequence(config.seq):  # check that the sequence is valid (contains only HP)
-            self.seq = config.seq
+    def _initialize_sequence(self, config: utils.Configuration) -> None:
+        """Initialize protein sequence, converting to HP if needed."""
+        print("Sequence:", config.seq)
+        if utils.is_valid_sequence(config.seq):
+            self.sequence = config.seq
         else:
-            self.seq = utils.hp_sequence_transform(
-                config.seq)  # if the sequence include the 20 different amino acids it will be coded in HP only
-            print('\033[42mThe sequence was converted into binary configuration -> ', self.seq, '\033[0;0m')
+            self.sequence = utils.hp_sequence_transform(config.seq)
+            print("HP representation:", self.sequence)
+        self.sequence_length = len(self.sequence)
 
-        self.n = len(config.seq)  # length of the sequence
-
-        if not config.use_struct:  # linear structur assumed if struct is not specified as input
-            self.struct = utils.linear_struct(self.seq)
+    def _initialize_structure(self, config: utils.Configuration) -> None:
+        """Initialize protein structure."""
+        if not config.use_struct:
+            self.struct = utils.linear_struct(self.sequence)
         else:
-            try:  # check that sequence has the right length
-                assert len(config.struct) == self.n
-            except:
-                raise AssertionError('The lengths of the sequence and the structure are not the same')
+            if len(config.struct) != self.sequence_length:
+                raise AssertionError("Sequence and structure lengths do not match")
             self.struct = config.struct
 
-        if not utils.is_valid_struct(self.struct):  # check that the sequence is valid
+        if not utils.is_valid_struct(self.struct):
             raise AssertionError(
-                'The structure is not a self avoid walk (SAW) or the distances between consecutive points are different from 1')
+                "Invalid structure: not a self-avoiding walk (SAW) "
+                "or distances between consecutive points differ from 1"
+            )
 
-        # parameters setting
+    def _initialize_parameters(self, config: utils.Configuration) -> None:
+        """Load simulation parameters from configuration."""
         self.annealing = config.annealing
-        self.T_in = config.T
+        self.starting_temperature = config.temperature
         self.steps = config.folds
         self.gif = config.gif
-        self.gif_struct = []
 
-        self.min_en_struct = self.struct  # variable to record the min energy structure (for now is the only structure)
-        self.en_evo = [self.energy()]  # list to keep track of the energy evolution
-        self.T = []  # list to keep track of the temperature evolution
-        self.counter = []  # counter of number of folding per step
-        self.comp_evo = [self.compactness()]  # list to keep track of the compactness evolution
-        self.max_comp_struct = self.struct  # variable to record the max compact structure (for now is the only structure)
+    def _initialize_tracking(self) -> None:
+        """Initialize tracking lists for energy, temperature, compactness, and GIF frames."""
+        self.gif_struct: List[List[List[int]]] = []
+        self.min_energy_structure = self.struct.copy()
+        self.max_comp_struct = self.struct.copy()
+        self.energy_evolution: List[float] = [self.energy()]
+        self.temperature_evolution: List[float] = [self.starting_temperature]
+        self.compactness_evolution: List[int] = [self.compactness()]
+        self.n_foldings: List[int] = []
 
-    def evolution(self):
-        '''
-        Let the system evolving for a certain number of steps. 
-        New structures are accepted following the Metropolis algorithm (this function basically apply the Metropolis alg).\n
-        All the parameters are taken from the initial configuration.\n
-        The energy evolution values, min energy structure and compactness conformations are saved.
+    def evolution(self) -> None:
+        """Let the system evolve for `self.steps` steps using the Metropolis algorithm."""
+        temp = self.starting_temperature
+        annealing_coef = -temp / self.steps
 
-        Parameters
-        ----------
-        None.
+        for step in range(self.steps):
+            utils.progress_bar(step + 1, self.steps)
 
-        Returns
-        -------
-        None.
-        '''
-        T = self.T_in
-        self.T.append(T)  # initial temperature
-        m = -T / self.steps  # angolar coefficient for the annealing
+            # Annealing temperature decrease
+            if self.annealing and temp > 0.002:
+                temp = annealing_coef * (step - self.steps)
 
-        for i in range(self.steps):
-            utils.progress_bar(i + 1, self.steps)  # print the progress bar of the evolution
+            self._step_metropolis(temp)
 
-            if self.annealing and T > 0.002: T = m * (
-                    i - self.steps)  # temperature decrease linearly w.r.t. the steps, if annealing is True
-            en = self.energy()  # current protein energy
-            init_str = self.struct  # current protein structure
-            self.struct = self.random_fold()  # new structure is generated
-            new_en = self.energy()  # the energy of the new structure is computed
+            # Save temperature and GIF frame
+            self.temperature_evolution.append(temp)
+            if self.gif and (step % max(1, self.steps // 100) == 0):
+                self.gif_struct.append([coord.copy() for coord in self.struct])
 
-            if new_en > en:  # if the new energy is higher to the previus one, the new structure is accepted following the Metropolis alg
-                d_en = new_en - en  # energy difference of the two states
-                r = random.uniform(0, 1)
-                p = math.exp(-d_en / T)  # probability to accept the new structure
-                if r > p:
-                    self.struct = init_str  # the new structure is not accepted (overwrite the initial structure)
+    def _step_metropolis(self, temperature: float) -> None:
+        """Perform a single step of the Metropolis evolution."""
+        current_energy = self.energy()
+        current_struct = [coord.copy() for coord in self.struct]
 
-            if new_en < min(self.en_evo):  # to save the min enrergy and structure
-                self.min_en_struct = self.struct
-            self.en_evo.append(new_en)  # record the energy evolution
+        self.struct = self.random_fold()
+        new_energy = self.energy()
 
-            self.comp_evo.append(self.compactness())  # save the compactness
-            if self.comp_evo[-1] > max(self.comp_evo[:-1]):
-                self.max_comp_struct = self.struct
+        # Accept new structure probabilistically if energy increases
+        if new_energy > current_energy:
+            if not self._accept_higher_energy(current_energy, new_energy, temperature):
+                self.struct = current_struct
 
-            self.T.append(T)  # record the T evolution
+        # Update min energy and max compact structures
+        if new_energy < min(self.energy_evolution):
+            self.min_energy_structure = [coord.copy() for coord in self.struct]
 
-            if self.gif:
-                # Around 100 frames per GIF
-                save_interval = max(1, self.steps // 100)
-                if i % save_interval == 0:
-                    self.gif_struct.append(self.struct.copy())
+        self.energy_evolution.append(new_energy)
 
-    def energy(self, e=1.) -> float:
-        '''
-        Function to compute the energy of the protein structure. The binding energy can be changed.
+        comp = self.compactness()
+        self.compactness_evolution.append(comp)
+        if comp > max(self.compactness_evolution[:-1]):
+            self.max_comp_struct = [coord.copy() for coord in self.struct]
 
-        Parameters
-        ----------
-        e : float, optional
-            e represent the binding energy.\n
-            The default is 1.
+    def _accept_higher_energy(self, current: float, new: float, temperature: float) -> bool:
+        """Return True if the new structure is accepted by the Metropolis criterion."""
+        delta_e = new - current
+        prob = math.exp(-delta_e / temperature)
+        return prob >= random.uniform(0, 1)
 
-        Returns
-        -------
-        float
-            The energy of the protein structure.
-        '''
-        count_h = 0  # counter of H-H neighbor pairs (exluding protein's backbone bonds)
-
-        for i, seq in enumerate(self.seq):
-            if seq == 'H':
-                neig = self.get_neig_of(i)  # string of neighbors of i-th monomer (exluding protein's backbone bonds)
-                count_h += neig.count('H')
-
-        tot_en = -e * count_h / 2  # total energy of the prot struct (/2 because each bond is counted twice)
-        return tot_en
+    def energy(self, e: float = 1.0) -> float:
+        """Compute the total energy of the protein structure."""
+        count_hh = sum(self.get_neighbors(i).count('H') for i in range(self.sequence_length))
+        return -e * count_hh / 2
 
     def compactness(self) -> int:
-        '''
-        Function to compute the compactness of the structure.
-        The compactness is the total number of neighbours of each monomer (backbone excluded).\n
-        The return is twice the number of neighbours, but since the compactness is then normalized by its maximum value,
-        is not necessary to divide by two
+        """Compute the compactness of the protein structure."""
+        return sum(len(self.get_neighbors(i)) for i in range(self.sequence_length))
 
-        Parameters
-        ----------
-        None
+    def get_neighbors(self, i: int) -> str:
+        """Return string of H/P neighbors for the i-th monomer (excluding backbone)."""
+        x, y = self.struct[i]
+        candidates = [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]]
+        if i > 0: candidates.remove(self.struct[i - 1])
+        if i < self.sequence_length - 1: candidates.remove(self.struct[i + 1])
+        return ''.join(self.sequence[self.struct.index(pos)] for pos in candidates if pos in self.struct)
 
-        Returns
-        -------
-        int :
-            The total number of neighbours counted (doubled)
-        '''
-        count_neig = 0
-
-        for i, seq in enumerate(self.seq):
-            count_neig += len(self.get_neig_of(i))
-
-        return count_neig
-
-    def get_neig_of(self, i: int) -> str:
-        '''
-        Function to see which are the neighbors of the i-th monomer of the protein sequence.
-        The bounded monomer are not considered neighbors.\n
-        The function return a string with the type of neighbour monomers: H/P.
-
-        Parameters
-        ----------
-        i : int
-            Monomer position in the sequence for which we want the neighbors.
-
-        Returns
-        -------
-        str
-            Neighbors type H/P.
-        '''
-        neig = ''  # string to save the neighbors
-        x, y = self.struct[i]  # coordinates of the monomer
-
-        possible_neig = [[x - 1, y], [x, y - 1], [x + 1, y], [x, y + 1]]
-
-        if i > 0:  # if we are not in the starting monomer we remove the prevous monomer from the list
-            possible_neig.remove(self.struct[i - 1])
-
-        if i < (self.n - 1):  # if we are not in the ending monomer we remove the following monomer from the list
-            possible_neig.remove(self.struct[i + 1])
-
-        for monomer in possible_neig:  # check if the remaning points in the list contains some monomers (some neighbours)
-            if monomer in self.struct:
-                ind = self.struct.index(monomer)  # get the position on the sequence of the neighbor
-                neig += self.seq[ind]  # get the H/P monomer
-
-        return neig
-
-    def random_fold(self) -> list:
-        '''
-        Randomly choose a monomer in the protein (exluding the first and the last) and fold the protein with a
-        random method using the tail_fold function. If the structure generated is not valid
-        the process is repited until a valid structure is found.
-
-        Returns
-        -------
-        list
-            The new rotein streucture randomly folded (valid).
-        '''
-        c = 0  # counter of the number of folding until a valid sequence is founded
-
-        while True:  # cycle valid until a valid structure is found
-            index = random.randint(1, self.n - 2)  # select a random monomer where start the folding
+    def random_fold(self) -> List[List[int]]:
+        """Generate a valid random folding for the protein."""
+        while True:
+            index = random.randint(1, self.sequence_length - 2)
             x, y = self.struct[index]
-            tail = self.struct[index:]  # tail of the structure that will be folded
+            tail = [coord.copy() for coord in self.struct[index:]]
 
-            # Excluding diagonal move is the sequence cannot support it (the previous and following monomer are aligned)
-            distance_sur = utils.get_dist(self.struct[index - 1], self.struct[index + 1])
-            diag_move = True if math.isclose(distance_sur, math.sqrt(2)) else False
+            # Determine if diagonal move is allowed
+            dist = utils.get_dist(self.struct[index - 1], self.struct[index + 1])
+            diag_move = math.isclose(dist, math.sqrt(2))
 
-            for i, mon in enumerate(tail):  # shifting the tail start in [0,0] for the folding
-                tail[i] = [mon[0] - x, mon[1] - y]
-            previous = self.struct[index - 1]  # recording the prev monomer
-            previous = [previous[0] - x, previous[1] - y]
+            # Shift tail and previous monomer to origin
+            tail = [[cx - x, cy - y] for cx, cy in tail]
+            previous = [self.struct[index - 1][0] - x, self.struct[index - 1][1] - y]
 
-            # choose a random method for the protein folding
-            method = random.randint(1, 8) if diag_move else random.randint(1,
-                                                                           7)  # exclude diagonal move if the conditions don't match
-            tail = utils.tail_fold(struct=tail, method=method, previous=previous)  # fold the tail with a random method
+            method = random.randint(1, 8) if diag_move else random.randint(1, 7)
+            tail = utils.tail_fold(tail, method, previous)
 
-            for i, mon in enumerate(tail):  # shifting the folded tail in the correct position
-                tail[i] = [mon[0] + x, mon[1] + y]
+            # Shift tail back to correct position
+            tail = [[cx + x, cy + y] for cx, cy in tail]
+            new_struct = self.struct[:index] + tail
 
-            new_struct = self.struct[:index]  # construction of the new structure generated
-            for mon in tail:  # pasting the new tail
-                new_struct.append(mon)
-
-            c += 1
-
-            if utils.is_valid_struct(new_struct):  # if the structure is valid and the cycle
-                break
-
-        self.counter.append(c)  # counter of the number of foldings
-
-        return new_struct
+            self.n_foldings.append(1)
+            if utils.is_valid_struct(new_struct):
+                return new_struct
