@@ -36,20 +36,20 @@ From _terminal_ move into the desired folder and clone this repository using the
 git clone https://github.com/TommyGiak/HP_model.git
 ```
 
-Once the github repository is cloned use the following command to run the script with the default configuration file as
-input:
+Once the github repository is cloned use the following command to run the script, move to the `src` folder with:
+
+```shell
+cd src
+```
+
+and run the main script:
 
 ```shell
 python main.py
 ```
 
-the default configuration file is _config.txt_. Of course all the parameters can be setted, for further instruction look
+the default configuration file is _config.txt_ in the `src` folder. Of course all the parameters can be setted, for further instruction look
 at the following [paragraph](https://github.com/TommyGiak/HP_model#parameters-setting).\
-To use a specific configuration file, instead, use:
-
-```shell
-python main.py <filename>
-```
 
 To create a personalized configuration file
 look [here](https://github.com/TommyGiak/HP_model#create-a-personalized-configuration-file)\
@@ -66,7 +66,7 @@ configuration file exnovo as described below.
 
 ### Insert the protein sequence
 
-The protein sequence can be written in the _config.txt_ file at the _sequence_ variable. The sequence is caps sensitive
+The protein sequence can be written in the _config.txt_ file at the _sequence_ variable (in the `src` folder). The sequence is caps sensitive
 so the letters must be upper case only. The sequence doesn't need the quotation marks " or ' .\
 This sequence can be already given as H/P only monomers (hydrophobic or polar) or with the 20 different amino-acids
 coded upper case, is this case the sequence will be converted to H/P.
@@ -97,17 +97,35 @@ The new configuration file can have any extension.
 
 ## Repository structure
 
+```plaintext
+HP_model/
+├── data/
+│   └── all the plots...
+├── src/
+│   ├── __init__.py
+│   ├── config.yaml
+│   ├── main.py
+│   ├── plots.py
+│   ├── protein_class.py
+│   └── utils.py
+├── test/
+│   ├── __init__.py
+│   ├── config_test.yaml
+│   └── test.py
+└── requirements.txt
+```
+
 The repository contain these pyhton files:
 
-- _main.py_: runs the evolution and save the results in the _/data_ folder
-- _protein_class.py_: contains a class named `Protein` which contains and save the protein information and implement all
+- `src/main.py`: runs the evolution and save the results in the _/data_ folder
+- `src/protein_class.py`: contains a class named `Protein` which contains and save the protein information and implement all
   the main function for the evolution of the system
-- _utils.py_: contains different functions to validate the structures of the proteins and to support the evolution of
+- `src/utils.py`: contains different functions to validate the structures of the proteins and to support the evolution of
   the protein, including reordering of the input file configurations
-- _plots.py_: contains funtion to plot the results
-- _test.py_: contains the test functions to test the code
-- _config.txt_: contains the information needed by the program as input
-- _config_test.txt_: contains the information to start the test of the application; just to be sure to don't have
+- `src/plots.py`: contains funtion to plot the results
+- `test/test.py`: contains the test functions to test the code
+- `src/config.yaml`: contains the information needed by the program as input
+- `test/config_test.yaml`: contains the information to start the test of the application; just to be sure to don't have
   problems, I suggest you to don't modify it. To run the test is sufficient to write from terminal, inside the cloned
   repository, "pytest test.py" (pytest is required).
 
@@ -129,7 +147,7 @@ Each folding step involve the following steps:
 1. choose a random monomer in the protein: a random integer from $0$ to $l-1$ where $l$ is the lenght of the protein
    sequence. The sampled monomer will be the starting point for the movement of the protein.
 1. sample a random integer in $[1,8]$ to randomly select a type of move, the movement are implemented in the function [
-   `tail_fold`](https://github.com/TommyGiak/HP_model/blob/main/utils.py) in the _utils.py_ file. The movement are: 1 =
+   `tail_fold`](https://github.com/TommyGiak/HP_model/blob/main/src/utils.py) in the _utils.py_ file. The movement are: 1 =
    90° clockwise rotation, 2 = 90° anticlockwise rotation, 3 = 180° rotaion, 4 = x-axis refletion, 5 = y-axis
    reflection, 6 = 1 and 3 quadrant bisector symmetry, 7 = 2 and 4 quadrant bisector symmetry and 8 = movement on a
    digaonal of a random monomer. The movement can also be choosen a priori, if it is not specified a random one is

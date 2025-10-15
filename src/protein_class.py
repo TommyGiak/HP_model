@@ -114,12 +114,15 @@ class Protein:
         if new_energy > current_energy:
             if not self._accept_higher_energy(current_energy, new_energy, temperature):
                 self.struct = current_struct
+                self.energy_evolution.append(current_energy)
+            else:
+                self.energy_evolution.append(new_energy)
+        else:
+            self.energy_evolution.append(new_energy)
 
         # Update min energy and max compact structures
         if new_energy < min(self.energy_evolution):
             self.min_energy_structure = [coord.copy() for coord in self.struct]
-
-        self.energy_evolution.append(new_energy)
 
         comp = self.compactness()
         self.compactness_evolution.append(comp)
