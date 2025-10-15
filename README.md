@@ -52,7 +52,7 @@ pip install -r requirements.txt
 From your terminal, navigate to your desired folder and clone the repository:
 
 ```shell
-git clone https://github.com/alessandroquirile/HP_model.git
+git clone https://github.com/TommyGiak/HP_model.git
 ```
 
 After cloning, the main script with:
