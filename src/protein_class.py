@@ -5,11 +5,9 @@ Refactored for readability and modularity
 """
 import random
 from typing import List
-
 import math
-
 import utils
-
+import copy
 
 class Protein:
     """
@@ -41,7 +39,6 @@ class Protein:
             self.sequence = config.seq
         else:
             self.sequence = utils.hp_sequence_transform(config.seq)
-            # print("HP representation:", self.sequence)
         self.sequence_length = len(self.sequence)
 
     def _initialize_structure(self, config: utils.Configuration) -> None:
@@ -69,43 +66,36 @@ class Protein:
     def _initialize_tracking(self) -> None:
         """Initialize tracking lists for energy, temperature, compactness, and GIF frames."""
         self.gif_struct: List[List[List[int]]] = []
-        self.min_energy_structure = self.struct.copy()
-        self.max_comp_struct = self.struct.copy()
+        self.min_energy_structure = copy.deepcopy(self.struct)
+        self.max_comp_struct = copy.deepcopy(self.struct)
         self.energy_evolution: List[float] = [self.energy()]
         self.temperature_evolution: List[float] = [self.starting_temperature]
         self.compactness_evolution: List[int] = [self.compactness()]
-        self.n_foldings: List[int] = []
+        self.n_foldings: int = 0
 
     def evolution(self) -> None:
         """Let the system evolve for `self.steps` steps using the Metropolis algorithm."""
         self.print_config()
 
         temperature = self.starting_temperature
-        annealing_coefficient = -temperature / self.steps
-
         for step in range(self.steps):
             utils.progress_bar(step + 1, self.steps)
 
-            # Annealing temperature decrease
+            # Annealing temperature decreases
             if self.annealing and temperature > 0.002:
-                temperature = annealing_coefficient * (step - self.steps)
+                temperature = self.starting_temperature * (1 - step / self.steps)
 
             self._step_metropolis(temperature)
 
             # Save temperature and GIF frame
             self.temperature_evolution.append(temperature)
             if self.gif and (step % max(1, self.steps // 100) == 0):
-                self.gif_struct.append([coord.copy() for coord in self.struct])
-
-            # No skipping
-            """if self.gif:
-                # Save every frame (no skipping)
-                self.gif_struct.append([coord.copy() for coord in self.struct])"""
+                self.gif_struct.append([list(coord) for coord in self.struct])
 
     def _step_metropolis(self, temperature: float) -> None:
         """Perform a single step of the Metropolis evolution."""
         current_energy = self.energy()
-        current_struct = [coord.copy() for coord in self.struct]
+        current_struct = [list(coord) for coord in self.struct]
 
         self.struct = self.random_fold()
         new_energy = self.energy()
@@ -122,12 +112,12 @@ class Protein:
 
         # Update min energy and max compact structures
         if new_energy < min(self.energy_evolution):
-            self.min_energy_structure = [coord.copy() for coord in self.struct]
+            self.min_energy_structure = [list(coord) for coord in self.struct]
 
         comp = self.compactness()
         self.compactness_evolution.append(comp)
         if comp > max(self.compactness_evolution[:-1]):
-            self.max_comp_struct = [coord.copy() for coord in self.struct]
+            self.max_comp_struct = [list(coord) for coord in self.struct]
 
     def _accept_higher_energy(self, current: float, new: float, temperature: float) -> bool:
         """Return True if the new structure is accepted by the Metropolis criterion."""
@@ -148,16 +138,22 @@ class Protein:
         """Return string of H/P neighbors for the i-th monomer (excluding backbone)."""
         x, y = self.struct[i]
         candidates = [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]]
-        if i > 0: candidates.remove(self.struct[i - 1])
-        if i < self.sequence_length - 1: candidates.remove(self.struct[i + 1])
-        return ''.join(self.sequence[self.struct.index(pos)] for pos in candidates if pos in self.struct)
+        if i > 0 and self.struct[i - 1] in candidates:
+            candidates.remove(self.struct[i - 1])
+        if i < self.sequence_length - 1 and self.struct[i + 1] in candidates:
+            candidates.remove(self.struct[i + 1])
+        neighbor_indices = [j for j, struct_pos in enumerate(self.struct) if struct_pos in candidates]
+        return ''.join(self.sequence[j] for j in neighbor_indices)
 
     def random_fold(self) -> List[List[int]]:
         """Generate a valid random folding for the protein."""
-        while True:
+        max_tries = 10**6
+        for _ in range(max_tries):
+            if self.sequence_length < 3:
+                raise ValueError("Sequence too short for folding")
             index = random.randint(1, self.sequence_length - 2)
             x, y = self.struct[index]
-            tail = [coord.copy() for coord in self.struct[index:]]
+            tail = [list(coord) for coord in self.struct[index:]]
 
             # Determine if diagonal move is allowed
             dist = utils.get_dist(self.struct[index - 1], self.struct[index + 1])
@@ -174,6 +170,7 @@ class Protein:
             tail = [[cx + x, cy + y] for cx, cy in tail]
             new_struct = self.struct[:index] + tail
 
-            self.n_foldings.append(1)
             if utils.is_valid_struct(new_struct):
+                self.n_foldings += 1
                 return new_struct
+        raise RuntimeError(f"Could not find a valid fold after {max_tries} attempts")
