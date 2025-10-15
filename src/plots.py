@@ -40,7 +40,7 @@ def view(protein: Protein, save=True, tit=None):
     ax.text(0.01, 0.95, string_comp, ha='left', va='top', transform=ax.transAxes)
     plt.show(block=False)
     if save:
-        plt.savefig("../data/prot_view.png", format="png", bbox_inches="tight", dpi=200)
+        plt.savefig("../output/prot_view.png", format="png", bbox_inches="tight", dpi=200)
 
 
 def view_min_en(protein, save=True):
@@ -71,7 +71,7 @@ def view_min_en(protein, save=True):
     ax.set_title('Min energy structure')
     plt.show(block=False)
     if save:
-        plt.savefig("../data/min_energy_view.png", format="png", bbox_inches="tight", dpi=200)
+        plt.savefig("../output/min_energy_view.png", format="png", bbox_inches="tight", dpi=200)
 
 
 def view_max_comp(protein, save=True):
@@ -103,7 +103,7 @@ def view_max_comp(protein, save=True):
     ax.text(0.01, 0.95, string_comp, ha='left', va='top', transform=ax.transAxes)
     plt.show(block=False)
     if save:
-        plt.savefig("../data/max_compactness_view.png", format="png", bbox_inches="tight", dpi=200)
+        plt.savefig("../output/max_compactness_view.png", format="png", bbox_inches="tight", dpi=200)
 
 
 def plot_energy(protein, avg: int = 10, save=True) -> None:
@@ -142,7 +142,7 @@ def plot_energy(protein, avg: int = 10, save=True) -> None:
     fig.tight_layout()
     plt.show(block=False)
     if save:
-        plt.savefig("../data/energy_evolution.png", format="png", bbox_inches="tight", dpi=200)
+        plt.savefig("../output/energy_evolution.png", format="png", bbox_inches="tight", dpi=200)
 
 
 def plot_compactness(protein, avg: int = 10, save=True) -> None:
@@ -182,7 +182,7 @@ def plot_compactness(protein, avg: int = 10, save=True) -> None:
     fig.tight_layout()
     plt.show(block=False)
     if save:
-        plt.savefig("../data/compactness_evolution.png", format="png", bbox_inches="tight", dpi=200)
+        plt.savefig("../output/compactness_evolution.png", format="png", bbox_inches="tight", dpi=200)
 
 
 def create_gif(protein):
@@ -190,7 +190,7 @@ def create_gif(protein):
     Function to create a gif of the evolution process.
     As first argument the protein class instance of the desired protein is needed.
     The gif will have about 100 frames with fps = 1.
-    The gif will not be shown with other plots but will be saved in the /data folder.
+    The gif will not be shown with other plots but will be saved in the /output folder.
     To control its creation, set TRUE or FALSE for the variable 'create_gif' in the configuration file.
     '''
     print('Creating gif...')
@@ -198,7 +198,7 @@ def create_gif(protein):
     fig, ax = plt.subplots()
     writer = PillowWriter(fps=2)
 
-    with writer.saving(fig, '../data/evo.gif', 200):
+    with writer.saving(fig, '../output/evo.gif', 200):
         for i, structure in enumerate(protein.gif_struct):
             utils.progress_bar(i + 1, len(protein.gif_struct))
 

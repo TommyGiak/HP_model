@@ -3,12 +3,15 @@ Protein folding simulation class
 Refactored for readability and modularity
 @author: Tommaso Giacometti
 """
+import copy
+import math
 import random
 from typing import List
-import math
-import utils
-import copy
+
 from scipy.constants import Boltzmann
+
+import utils
+
 
 class Protein:
     """
@@ -148,7 +151,7 @@ class Protein:
 
     def random_fold(self) -> List[List[int]]:
         """Generate a valid random folding for the protein."""
-        max_tries = 10**6
+        max_tries = 10 ** 6
         for _ in range(max_tries):
             if self.sequence_length < 3:
                 raise ValueError("Sequence too short for folding")
