@@ -13,4 +13,5 @@ pyparsing==3.2.5
 pytest==8.4.2
 python-dateutil==2.9.0.post0
 PyYAML==6.0.3
+scipy==1.16.2
 six==1.17.0
