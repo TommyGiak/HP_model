@@ -220,32 +220,6 @@ def hp_sequence_transform(seq: str) -> str:
 
     return ''.join(hp_seq)
 
-
-def progress_bar(progress: int, total: int) -> None:
-    """
-    Print a progress bar on the terminal when used inside a loop.
-
-    Parameters
-    ----------
-    progress : int
-        Current progress in the loop.
-    total : int
-        Total number of steps for the evolution.
-
-    Returns
-    -------
-    None
-        Only prints the progress bar to the terminal.
-    """
-    percentage = progress / float(total) * 100
-    filled = int(percentage / 10)  # number of '#' to print (max 10)
-    empty = 10 - filled
-    bar = f"[{'#' * filled}{' ' * empty}]"
-    print(f"\r{bar} {percentage:.2f}%", end="")
-    if progress >= total:
-        print()  # newline after completion
-
-
 import yaml
 import random
 

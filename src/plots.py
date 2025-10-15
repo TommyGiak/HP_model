@@ -2,12 +2,12 @@
 """
 @author: Tommaso Giacometti
 """
-import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib.animation import PillowWriter
-
 import utils
+import numpy as np
+from tqdm.auto import tqdm
+import matplotlib.pyplot as plt
 from protein_class import Protein
+from matplotlib.animation import PillowWriter
 
 
 def view(protein: Protein, save=True, tit=None):
@@ -199,8 +199,7 @@ def create_gif(protein):
     writer = PillowWriter(fps=2)
 
     with writer.saving(fig, '../output/evo.gif', 200):
-        for i, structure in enumerate(protein.gif_struct):
-            utils.progress_bar(i + 1, len(protein.gif_struct))
+        for i, structure in enumerate(tqdm(protein.gif_struct)):
 
             # Estrai coordinate x, y
             x = [coord[0] for coord in structure]

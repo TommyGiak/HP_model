@@ -7,8 +7,7 @@ import copy
 import math
 import random
 from typing import List
-
-from scipy.constants import Boltzmann
+from tqdm.auto import tqdm
 
 import utils
 
@@ -82,8 +81,7 @@ class Protein:
         self.print_config()
 
         temperature = self.starting_temperature
-        for step in range(self.steps):
-            utils.progress_bar(step + 1, self.steps)
+        for step in tqdm(range(self.steps)):
 
             # Annealing temperature decreases
             if self.annealing and temperature > 0.002:
@@ -126,7 +124,7 @@ class Protein:
     def _accept_higher_energy(self, current: float, new: float, temperature: float) -> bool:
         """Return True if the new structure is accepted by the Metropolis criterion."""
         delta_e = new - current
-        prob = math.exp(-delta_e / (Boltzmann * temperature))
+        prob = math.exp(-delta_e / temperature)
         return prob >= random.uniform(0, 1)
 
     def energy(self, e: float = 1.0) -> float:
