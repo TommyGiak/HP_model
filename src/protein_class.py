@@ -8,7 +8,6 @@ from typing import List
 import math
 import utils
 import copy
-from scipy.constants import Boltzmann
 
 class Protein:
     """
@@ -123,7 +122,7 @@ class Protein:
     def _accept_higher_energy(self, current: float, new: float, temperature: float) -> bool:
         """Return True if the new structure is accepted by the Metropolis criterion."""
         delta_e = new - current
-        prob = math.exp(-delta_e / (Boltzmann * temperature))
+        prob = math.exp(-delta_e / (1 * temperature))
         return prob >= random.uniform(0, 1)
 
     def energy(self, e: float = 1.0) -> float:
