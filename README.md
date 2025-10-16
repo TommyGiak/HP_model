@@ -183,7 +183,7 @@ p = e^{-\frac{\Delta E}{k_bT}}
 
 where $|\Delta E| > 0$.
 
-_Note_: $k_b$ (Boltzmann constant) is included, using SciPy. Temperatures in the config file are interpreted as $T$.
+_Note_: $k_b$ (Boltzmann constant) is approximated to 1. Temperatures in the config file are interpreted as $T$.
 
 ## 🖥️ Execution Example
 
