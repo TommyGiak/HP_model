@@ -5,7 +5,7 @@ This project implements the HP model for protein folding in Python.
 The HP model is a simplified approach to explore basic protein folding behaviors via Monte Carlo simulations on the free
 energy of protein bonds. It reduces protein sequences to two amino acid categories: H (hydrophobic) and P (polar). For
 more information, see [this paper](https://pubs.acs.org/doi/10.1021/ma00200a030) or
-the [theory section](#theoretical-background) below.
+the [theory section](#-theoretical-background) below.
 
 A command-line application is included, allowing users to input a protein sequence (using all 20 standard amino acids or
 H/P only), run HP model simulations at chosen temperatures, optionally apply annealing algorithms, and output the energy
@@ -17,17 +17,17 @@ behavior when two random adjacent amino acids are swapped.
 
 ## 📋 Table of Contents
 
-1. [Installation & Running](#installation--running)
-2. [Parameter Settings](#parameter-settings)
-    1. [Insert the Protein Sequence](#insert-the-protein-sequence)
-    2. [Change the Number of Folding Steps](#change-the-number-of-folding-steps)
-    3. [Other Parameters](#other-parameters)
-    4. [Create a Custom Configuration File](#create-a-custom-configuration-file)
-3. [Repository Structure](#repository-structure)
-4. [Theoretical Background](#theoretical-background)
-    1. [Folding Algorithm](#folding-algorithm)
-    2. [Structure Acceptance](#structure-acceptance)
-5. [Execution Example](#execution-example)
+1. [Installation & Running](#-installation--running)
+2. [Parameter Settings](#%EF%B8%8F-parameter-settings)
+    1. [Insert the Protein Sequence](#-insert-the-protein-sequence)
+    2. [Change the Number of Folding Steps](#-change-the-number-of-folding-steps)
+    3. [Other Parameters](#-other-parameters)
+    4. [Create a Custom Configuration File](#-create-a-custom-configuration-file)
+3. [Repository Structure](#-repository-structure)
+4. [Theoretical Background](#-theoretical-background)
+    1. [Folding Algorithm](#-folding-algorithm)
+    2. [Structure Acceptance](#-structure-acceptance)
+5. [Execution Example](#%EF%B8%8F-execution-example)
 
 ## 🚀 Installation & Running
 
@@ -62,13 +62,13 @@ python src/main.py
 ```
 
 The default configuration file is `config.yaml` in the `src` folder. All parameters are configurable; for more details,
-see the [parameters section](#parameter-settings).
+see the [parameters section](#%EF%B8%8F-parameter-settings).
 
-To create a custom configuration file, check [this guide](#create-a-custom-configuration-file).
+To create a custom configuration file, check [this guide](#-create-a-custom-configuration-file).
 
 ### Requirements
 
-All dependencies are specified in `requirements.txt`— use this file to set up your environment!
+All dependencies are specified in `requirements.txt`, use this file to set up your environment!
 
 ## ⚙️ Parameter Settings
 
@@ -183,7 +183,10 @@ p = e^{-\frac{\Delta E}{k_bT}}
 
 where $|\Delta E| > 0$.
 
-_Note_: $k_b$ (Boltzmann constant) is approximated to 1. Temperatures in the config file are interpreted as $T$.
+*_Notes_*: \
+$k_b$ (Boltzmann constant) is approximated to 1. Temperatures in the config file are interpreted as $T$.
+- k_B = 1 simplifies the simulation and numerical comparison between runs.
+- Ensure all inputs are consistently non-dimensionalized going forward (energy, temperature, etc.).
 
 ## 🖥️ Execution Example
 
