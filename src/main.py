@@ -1,36 +1,46 @@
 """
 @author: Tommaso Giacometti
 """
+
 import random
-import time
 
 import plots
 import utils
 from protein_class import Protein
 
-if __name__ == '__main__':
+
+def print_simulation_setup(config):
+    """Display the main simulation configuration."""
+    print("[HP Model] Simulation setup")
+    print(f"Sequence:           {config.seq}")
+    print(f"Sequence length:    {len(config.seq)}")
+    print(f"Structure:          {'Linear' if not config.use_struct else 'Non-linear'}")
+    print(f"Folding steps:      {config.folds}")
+    print(f"Annealing:          {config.annealing}")
+    print(f"Temperature:        {config.temperature if config.annealing else 'Undefined'}")
+
+
+def generate_plots(protein, config):
+    """Generate all plots and optionally create a GIF."""
+    plots.view(protein, tit='Final configuration', filename="final.png")
+    plots.view_min_energy(protein, filename="min_energy.png")
+    plots.view_max_compactness(protein, filename="max_compactness.png")
+    plots.plot_energy(protein, filename="energy_evolution.png", annealing=config.annealing)
+    plots.plot_compactness(protein, filename="compactness_evolution.png", annealing=config.annealing)
+
+    if config.gif:
+        plots.create_gif(protein, filename="evolution.gif")
+
+
+if __name__ == "__main__":
     config = utils.Configuration("config.yaml")
     random.seed(config.seed)
 
     protein = Protein(config)
+    plots.view(protein, tit="Initial configuration", filename="initial.png")
 
-    # plots.view(protein, tit='Initial configuration')
+    print_simulation_setup(config)
 
-    print('--------------------')
-    start = time.time()
-    print('Evolution started...')
     protein.evolution()
-    print('Evolution ended')
-    print(f'It took {time.time() - start:.3f} seconds')
-    print('---------------')
 
-    plots.view(protein, tit='Final configuration')
-    plots.view_min_en(protein)
-    plots.view_max_comp(protein)
-    plots.plot_energy(protein)
-    plots.plot_compactness(protein)
-
-    # plt.show()
-
-    if config.gif:
-        plots.create_gif(protein)
+    generate_plots(protein, config)

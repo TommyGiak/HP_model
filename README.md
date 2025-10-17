@@ -185,6 +185,7 @@ where $|\Delta E| > 0$.
 
 *_Notes_*: \
 $k_b$ (Boltzmann constant) is approximated to 1. Temperatures in the config file are interpreted as $T$.
+
 - k_B = 1 simplifies the simulation and numerical comparison between runs.
 - Ensure all inputs are consistently non-dimensionalized going forward (energy, temperature, etc.).
 
@@ -199,20 +200,20 @@ sequence ([source](https://www.ncbi.nlm.nih.gov/protein/KAB1270346.1?report=fast
 
 Results (found in the `output/` folder):
 
-- Minimum energy structure:\
-  <img src="./output/min_energy_view.png" alt="energy minimum" width="450"/>
+- Initial protein sequence:
+  <img src="./output/initial.png" alt="Initial protein sequence" width="450"/>
+- Evolution process:
+  <img src="./output/evolution.gif" alt="Evolution process" width="450"/>
+- Final protein folding:
+  <img src="./output/final.png" alt="Final protein folding" width="450"/>
+- Energy evolution:
+  <img src="./output/energy_evolution.png" alt="Energy evolution" width="450"/>
+- Compactness evolution:
+  <img src="./output/compactness_evolution.png" alt="Compactness evolution" width="450"/>
+- Minimum energy folding
+  <img src="./output/min_energy.png" alt="Minimum energy folding" width="450"/>
+- Maximum compactness folding
+  <img src="./output/max_compactness.png" alt="Max compactness folding" width="450"/>
 
-- Maximum compactness structure:\
-  <img src="./output/max_compactness_view.png" alt="compactness maximum" width="450"/>
-
-- Evolution process GIF:\
-  <img src="./output/evo.gif" alt="evolution" width="450"/>
-
-- Energy evolution profile:\
-  <img src="./output/energy_evolution.png" alt="energy evolution" width="450"/>
-
-- Compactness evolution profile:\
-  <img src="./output/compactness_evolution.png" alt="compactness evolution" width="450"/>
-
-The plots show how energy and compactness stabilize as the temperature decreases.  
-Lowest energy does not necessarily correspond to highest compactness.
+The plots show how energy and compactness stabilize as the temperature decreases. Lowest energy does not necessarily
+correspond to highest compactness.
