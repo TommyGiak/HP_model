@@ -8,33 +8,33 @@ from math import isclose, sqrt
 import yaml
 
 
-def is_valid_struct(struct: list[list[float]]) -> bool:
+def is_valid_fold(fold: list[list[float]]) -> bool:
     """
-    Check if the given protein structure is valid:
-    - Self-avoiding walk (no overlapping monomers)
+    Check if the given protein fold is valid:
+    - Self-avoiding walk (SAW, no overlapping monomers)
     - Distance between consecutive monomers is 1
 
     Parameters
     ----------
-    struct : list[list[float]]
-        Structure of the protein containing x and y coordinates for each monomer.
+    fold : list[list[float]]
+        Fold of the protein containing x and y coordinates for each monomer.
 
     Returns
     -------
     bool
-        True if the structure is valid, False otherwise.
+        True if the fold is valid, False otherwise.
     """
     seen = set()  # positions already visited
 
-    for i, pos in enumerate(struct):
+    for i, pos in enumerate(fold):
         pos_tuple = tuple(pos)  # convert to tuple to store in set
         if pos_tuple in seen:
             return False
         seen.add(pos_tuple)
 
         # check distance to next monomer
-        if i < len(struct) - 1:
-            if not isclose(get_distance(pos, struct[i + 1]), 1):
+        if i < len(fold) - 1:
+            if not isclose(get_distance(pos, fold[i + 1]), 1):
                 return False
 
     return True
@@ -65,7 +65,7 @@ def is_valid_sequence(sequence: str) -> bool:
     return sequence_chars.issubset(allowed_chars)
 
 
-def linear_struct(seq: str) -> list[list[int]]:
+def linear_fold(seq: str) -> list[list[int]]:
     """
     Create a linear structure corresponding to the input sequence.
 
@@ -228,22 +228,22 @@ class Configuration:
             config = yaml.safe_load(f)
 
         # Sequence
-        self.seq = config['sequence']
+        self.sequence = config['sequence']
 
         # Structure options
         structure_cfg = config.get('structure_options', {})
         self.use_struct = structure_cfg.get('use_structure')
-        self.struct = structure_cfg.get('coordinates') if self.use_struct else None
+        self.fold = structure_cfg.get('coordinates') if self.use_struct else None
 
         # Simulation options
         sim_cfg = config.get('simulation', {})
-        self.folds = sim_cfg.get('folding_steps')
-        self.annealing = sim_cfg.get('annealing')
+        self.n_steps = sim_cfg.get('folding_steps')
+        self.do_annealing = sim_cfg.get('annealing')
         self.temperature = sim_cfg.get('temperature')
 
         # Plot options
         plot_cfg = config.get('plot', {})
-        self.gif = plot_cfg.get('create_gif')
+        self.do_gif = plot_cfg.get('create_gif')
 
         # Seed
         seed_val = config.get('seed', None)
