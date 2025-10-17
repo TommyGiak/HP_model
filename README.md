@@ -200,19 +200,19 @@ sequence ([source](https://www.ncbi.nlm.nih.gov/protein/KAB1270346.1?report=fast
 
 Results (found in the `output/` folder):
 
-- Initial protein sequence:
+- Initial protein sequence:\
   <img src="./output/initial.png" alt="Initial protein sequence" width="450"/>
-- Evolution process:
+- Evolution process:\
   <img src="./output/evolution.gif" alt="Evolution process" width="450"/>
-- Final protein folding:
+- Final protein folding:\
   <img src="./output/final.png" alt="Final protein folding" width="450"/>
-- Energy evolution:
+- Energy evolution:\
   <img src="./output/energy_evolution.png" alt="Energy evolution" width="450"/>
-- Compactness evolution:
+- Compactness evolution:\
   <img src="./output/compactness_evolution.png" alt="Compactness evolution" width="450"/>
-- Minimum energy folding
+- Minimum energy folding\
   <img src="./output/min_energy.png" alt="Minimum energy folding" width="450"/>
-- Maximum compactness folding
+- Maximum compactness folding\
   <img src="./output/max_compactness.png" alt="Max compactness folding" width="450"/>
 
 The plots show how energy and compactness stabilize as the temperature decreases. Lowest energy does not necessarily
