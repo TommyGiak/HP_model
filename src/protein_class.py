@@ -7,6 +7,7 @@ import copy
 import math
 import random
 from typing import List
+
 from tqdm.auto import tqdm
 
 import utils
@@ -28,16 +29,8 @@ class Protein:
         self._initialize_parameters(config)
         self._initialize_tracking()
 
-    def print_config(self) -> None:
-        """Print configuration options selected by the user."""
-        print(f"Sequence: {self.sequence}")
-        print(f"Folding steps: {self.steps}")
-        print(f"Annealing enabled: {self.annealing}")
-        print(f"Starting temperature: {self.starting_temperature}")
-
     def _initialize_sequence(self, config: utils.Configuration) -> None:
         """Initialize protein sequence, converting to HP if needed."""
-        print("Sequence:", config.seq)
         if utils.is_valid_sequence(config.seq):
             self.sequence = config.seq
         else:
@@ -70,29 +63,37 @@ class Protein:
         """Initialize tracking lists for energy, temperature, compactness, and GIF frames."""
         self.gif_struct: List[List[List[int]]] = []
         self.min_energy_structure = copy.deepcopy(self.struct)
-        self.max_comp_struct = copy.deepcopy(self.struct)
+        self.max_compactness_structure = copy.deepcopy(self.struct)
         self.energy_evolution: List[float] = [self.energy()]
         self.temperature_evolution: List[float] = [self.starting_temperature]
         self.compactness_evolution: List[int] = [self.compactness()]
         self.n_foldings: int = 0
 
     def evolution(self) -> None:
-        """Let the system evolve for `self.steps` steps using the Metropolis algorithm."""
-        self.print_config()
-
+        """Let the system evolve for `self.steps` steps using the Metropolis algorithm.
+        For GIF: show all frames for the first 10 steps, then sample to avoid too many frames.
+        """
         temperature = self.starting_temperature
-        for step in tqdm(range(self.steps)):
+        self.gif_struct = []
+        self.gif_steps = []
+
+        for step in tqdm(range(self.steps), desc="Evolution"):
 
             # Annealing temperature decreases
             if self.annealing and temperature > 0.002:
                 temperature = self.starting_temperature * (1 - step / self.steps)
 
+            # Show all frames for the first 10 steps, then sample to avoid too many frames
+            if self.gif:
+                if step < 10 or step % max(1, self.steps // 100) == 0:
+                    self.gif_struct.append([list(coord) for coord in self.struct])
+                    self.gif_steps.append(step)
+
+            # Metropolis rule
             self._step_metropolis(temperature)
 
-            # Save temperature and GIF frame
+            # Save temperature
             self.temperature_evolution.append(temperature)
-            if self.gif and (step % max(1, self.steps // 100) == 0):
-                self.gif_struct.append([list(coord) for coord in self.struct])
 
     def _step_metropolis(self, temperature: float) -> None:
         """Perform a single step of the Metropolis evolution."""
@@ -104,11 +105,11 @@ class Protein:
 
         # Accept new structure probabilistically if energy increases
         if new_energy > current_energy:
-            if not self._accept_higher_energy(current_energy, new_energy, temperature):
+            if self._is_accepted_by_metropolis(current_energy, new_energy, temperature):
+                self.energy_evolution.append(new_energy)
+            else:
                 self.struct = current_struct
                 self.energy_evolution.append(current_energy)
-            else:
-                self.energy_evolution.append(new_energy)
         else:
             self.energy_evolution.append(new_energy)
 
@@ -116,12 +117,12 @@ class Protein:
         if new_energy < min(self.energy_evolution[:-1]):
             self.min_energy_structure = [list(coord) for coord in self.struct]
 
-        comp = self.compactness()
-        self.compactness_evolution.append(comp)
-        if comp > max(self.compactness_evolution[:-1]):
-            self.max_comp_struct = [list(coord) for coord in self.struct]
+        compactness = self.compactness()
+        self.compactness_evolution.append(compactness)
+        if compactness > max(self.compactness_evolution[:-1]):
+            self.max_compactness_structure = [list(coord) for coord in self.struct]
 
-    def _accept_higher_energy(self, current: float, new: float, temperature: float) -> bool:
+    def _is_accepted_by_metropolis(self, current: float, new: float, temperature: float) -> bool:
         """Return True if the new structure is accepted by the Metropolis criterion."""
         delta_e = new - current
         prob = math.exp(-delta_e / temperature)
@@ -158,7 +159,7 @@ class Protein:
             tail = [list(coord) for coord in self.struct[index:]]
 
             # Determine if diagonal move is allowed
-            dist = utils.get_dist(self.struct[index - 1], self.struct[index + 1])
+            dist = utils.get_distance(self.struct[index - 1], self.struct[index + 1])
             diag_move = math.isclose(dist, math.sqrt(2))
 
             # Shift tail and previous monomer to origin

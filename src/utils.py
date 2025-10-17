@@ -2,7 +2,10 @@
 @author: Tommaso Giacometti
 """
 
-from math import isclose
+import random
+from math import isclose, sqrt
+
+import yaml
 
 
 def is_valid_struct(struct: list[list[float]]) -> bool:
@@ -31,7 +34,7 @@ def is_valid_struct(struct: list[list[float]]) -> bool:
 
         # check distance to next monomer
         if i < len(struct) - 1:
-            if not isclose(get_dist(pos, struct[i + 1]), 1):
+            if not isclose(get_distance(pos, struct[i + 1]), 1):
                 return False
 
     return True
@@ -77,14 +80,11 @@ def linear_struct(seq: str) -> list[list[int]]:
         Linear structure, where each monomer is positioned on the x-axis.
     """
     struct = [[i, 0] for i in range(len(seq))]
-    print("Linear initial structure assumed")
+    # print("Linear initial structure assumed")
     return struct
 
 
-from math import sqrt
-
-
-def get_dist(coord1: list[float], coord2: list[float]) -> float:
+def get_distance(coord1: list[float], coord2: list[float]) -> float:
     """
     Compute the Euclidean distance between two points in the lattice.
 
@@ -123,9 +123,6 @@ def diagonal_move(struct: list[list[int]], previous: list[int]) -> list[list[int
     list[list[int]]
         Updated structure with the first monomer moved.
     """
-    # Randomly choose one of the two possible diagonal directions
-    case = random.randint(0, 1)
-
     x_prev, y_prev = previous
     x_next, y_next = struct[1]
 
@@ -219,9 +216,6 @@ def hp_sequence_transform(seq: str) -> str:
             raise ValueError(f"Amino acid '{aa}' not recognized")
 
     return ''.join(hp_seq)
-
-import yaml
-import random
 
 
 class Configuration:

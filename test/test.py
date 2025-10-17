@@ -214,7 +214,7 @@ def test_get_dist_0():
     WHEN: I want to compute the euclidean distance\n
     THEN: I expect the correct euclidean distance
     '''
-    assert isclose(utils.get_dist((1, 1), (1, 1)), 0)
+    assert isclose(utils.get_distance((1, 1), (1, 1)), 0)
 
 
 def test_get_dist_1():
@@ -225,7 +225,7 @@ def test_get_dist_1():
     WHEN: I want to compute the euclidean distance\n
     THEN: I expect the correct euclidean distance
     '''
-    assert isclose(utils.get_dist((1, 1), (2, 1)), 1)
+    assert isclose(utils.get_distance((1, 1), (2, 1)), 1)
 
 
 def test_get_dist_2():
@@ -236,7 +236,7 @@ def test_get_dist_2():
     WHEN: I want to compute the euclidean distance\n
     THEN: I expect the correct euclidean distance
     '''
-    assert isclose(utils.get_dist((1, 1), (3, 1)), 2)
+    assert isclose(utils.get_distance((1, 1), (3, 1)), 2)
 
 
 def test_get_dist_sqrt_2():
@@ -247,7 +247,7 @@ def test_get_dist_sqrt_2():
     WHEN: I want to compute the euclidean distance\n
     THEN: I expect the correct euclidean distance
     '''
-    assert isclose(utils.get_dist((0, 0), (1, 1)), sqrt(2))
+    assert isclose(utils.get_distance((0, 0), (1, 1)), sqrt(2))
 
 
 def test_get_dist_2_sqrt_2():
@@ -258,7 +258,7 @@ def test_get_dist_2_sqrt_2():
     WHEN: I want to compute the euclidean distance\n
     THEN: I expect the correct euclidean distance
     '''
-    assert isclose(utils.get_dist((-1, 1), (1, 3)), 2 * sqrt(2))
+    assert isclose(utils.get_distance((-1, 1), (1, 3)), 2 * sqrt(2))
 
 
 def test_energy_computation():
@@ -612,7 +612,7 @@ def test_diagonal_move_first_mon_move():
     previous = [previous[0] - x, previous[1] - y]
 
     tail = utils.diagonal_move(tail, previous)
-    d = utils.get_dist(tail[0], tail[1])
+    d = utils.get_distance(tail[0], tail[1])
     assert isclose(d, 1)
 
 
