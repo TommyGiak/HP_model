@@ -1,4 +1,4 @@
-# 🧬 HP Model for Protein Folding 
+# 🧬 HP Model for Protein Folding
 
 This project implements the HP model for protein folding in Python.
 
@@ -64,7 +64,8 @@ configuration file.
 
 ### 🔡 Insert the Protein Sequence
 
-Write the sequence in the `sequence` field inside `config.yaml` (uppercase letters only, no quotes). Sequences can use just H/P monomers or all 20 amino acids (automatically converted to H/P).
+Write the sequence in the `sequence` field inside `config.yaml` (uppercase letters only, no quotes). Sequences can use
+just H/P monomers or all 20 amino acids (automatically converted to H/P).
 
 ### 🔢 Change the Number of Folding Steps
 
@@ -81,7 +82,8 @@ Set the number of folding steps via the `folding_steps` variable under the `simu
 
 ### 📝 Create a Custom Configuration File
 
-Copy the syntax from `config.yaml` and adjust parameters as needed. To use your file, simply update the path in the main script if necessary. Custom configuration files can use any extension supported by PyYAML.
+Copy the syntax from `config.yaml` and adjust parameters as needed. To use your file, simply update the path in the main
+script if necessary. Custom configuration files can use any extension supported by PyYAML.
 
 Example `config.yaml` structure:
 
@@ -137,7 +139,10 @@ Main Python files:
 
 ## 📚 Theoretical Background
 
-The HP model simplifies protein folding by categorizing amino acids as either hydrophobic (H) or polar (P). Hydrophobic amino acids cluster inside the protein to avoid water, while polar ones remain on the surface. This model is educational and helps introduce protein folding basics, but real folding involves many more factors. Researchers use more advanced models for accurate predictions.
+The HP model simplifies protein folding by categorizing amino acids as either hydrophobic (H) or polar (P). Hydrophobic
+amino acids cluster inside the protein to avoid water, while polar ones remain on the surface. This model is educational
+and helps introduce protein folding basics, but real folding involves many more factors. Researchers use more advanced
+models for accurate predictions.
 
 ### 🧩 Folding Algorithm
 
@@ -153,8 +158,9 @@ The folding algorithm is implemented in the `Protein` class (`protein_class.py`)
 
 ### ✅ Structure Acceptance
 
-After generating a new structure, its energy is computed and accepted according to the Metropolis algorithm:  
-- If the new structure's energy is lower, accept it.  
+After generating a new structure, its energy is computed and accepted according to the Metropolis algorithm:
+
+- If the new structure's energy is lower, accept it.
 - If higher, accept with probability:
 
 ```math

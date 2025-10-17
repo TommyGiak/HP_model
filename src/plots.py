@@ -21,18 +21,18 @@ def view(protein: Protein, save=True, tit=None, filename="protein.png"):
 
     fig, ax = plt.subplots()
     for i in range(protein.sequence_length):
-        x.append(protein.struct[i][0])
-        y.append(protein.struct[i][1])
+        x.append(protein.fold[i][0])
+        y.append(protein.fold[i][1])
     ax.plot(x, y, alpha=0.5)
-    for i, coord in enumerate(protein.struct):
+    for i, coord in enumerate(protein.fold):
         ax.scatter(x[i], y[i], marker='$' + protein.sequence[i] + '$', s=20, color='red')
     ax.set_xlim(min(x) - 6, max(x) + 6)
     ax.set_ylim(min(y) - 6, max(y) + 6)
     ax.grid(alpha=0.2)
     if tit is not None:
         ax.set_title(tit)
-    en = protein.energy()
-    comp = protein.compactness()
+    en = protein.get_energy()
+    comp = protein.get_compactness()
     string = f'Energy: {en}'
     string_comp = f'Compactness: {comp / (max(protein.compactness_evolution) + 10e-15):.2f}'  # the +10e-15 is used for numerical stability (avoid division by 0)
     ax.text(0.01, 0.99, string, ha='left', va='top', transform=ax.transAxes)
@@ -53,10 +53,10 @@ def view_min_energy(protein, save=True, filename="min_energy.png"):
 
     fig, ax = plt.subplots()
     for i in range(protein.sequence_length):
-        x.append(protein.min_energy_structure[i][0])
-        y.append(protein.min_energy_structure[i][1])
+        x.append(protein.min_energy_fold[i][0])
+        y.append(protein.min_energy_fold[i][1])
     ax.plot(x, y, alpha=0.5)
-    for i, coord in enumerate(protein.struct):
+    for i, coord in enumerate(protein.fold):
         ax.scatter(x[i], y[i], marker='$' + protein.sequence[i] + '$', s=20, color='red')
     ax.set_xlim(min(x) - 6, max(x) + 6)
     ax.set_ylim(min(y) - 6, max(y) + 6)
@@ -85,10 +85,10 @@ def view_max_compactness(protein, save=True, filename="max_compactness.png"):
 
     fig, ax = plt.subplots()
     for i in range(protein.sequence_length):
-        x.append(protein.max_compactness_structure[i][0])
-        y.append(protein.max_compactness_structure[i][1])
+        x.append(protein.max_compactness_fold[i][0])
+        y.append(protein.max_compactness_fold[i][1])
     ax.plot(x, y, alpha=0.5)
-    for i, coord in enumerate(protein.struct):
+    for i, coord in enumerate(protein.fold):
         ax.scatter(x[i], y[i], marker='$' + protein.sequence[i] + '$', s=20, color='red')
     ax.set_xlim(min(x) - 6, max(x) + 6)
     ax.set_ylim(min(y) - 6, max(y) + 6)
@@ -202,7 +202,7 @@ def create_gif(protein, filename="evolution.gif") -> None:
             ax.set_xlim(min(x) - 6, max(x) + 6)
             ax.set_ylim(min(y) - 6, max(y) + 6)
             ax.grid(alpha=0.2)
-            ax.set_title(f"Evolution step {step_real}/{protein.steps}", fontsize=10)
+            ax.set_title(f"Evolution step {step_real}/{protein.n_steps}", fontsize=10)
 
             fig.canvas.draw()
             writer.grab_frame()
