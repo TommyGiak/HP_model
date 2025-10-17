@@ -1,4 +1,4 @@
-# HP Model for Protein Folding 🧬
+# 🧬 HP Model for Protein Folding 
 
 This project implements the HP model for protein folding in Python.
 
@@ -31,44 +31,31 @@ behavior when two random adjacent amino acids are swapped.
 
 ## 🚀 Installation & Running
 
-It is **recommended** to create a virtual environment before installing dependencies, to keep your Python workspace
-clean and isolated.
+From your terminal, navigate to your desired folder and clone this repository.
 
-You can do this with:
+After that, move to the project directory:
 
 ```shell
-python3 -m venv .venv
-source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
+cd HP_model
 ```
 
-All required packages are listed in `requirements.txt`.
+And activate the virtual environment:
 
-To install them, after activating your environment, run:
+```shell
+source .venv/bin/activate
+```
+
+Next, install all dependencies running:
 
 ```shell
 pip install -r requirements.txt
 ```
 
-From your terminal, navigate to your desired folder and clone the repository:
-
-```shell
-git clone https://github.com/TommyGiak/HP_model.git
-```
-
-After cloning, the main script with:
+Finally, run the application:
 
 ```shell
 python src/main.py
 ```
-
-The default configuration file is `config.yaml` in the `src` folder. All parameters are configurable; for more details,
-see the [parameters section](#%EF%B8%8F-parameter-settings).
-
-To create a custom configuration file, check [this guide](#-create-a-custom-configuration-file).
-
-### Requirements
-
-All dependencies are specified in `requirements.txt`, use this file to set up your environment!
 
 ## ⚙️ Parameter Settings
 
@@ -77,8 +64,7 @@ configuration file.
 
 ### 🔡 Insert the Protein Sequence
 
-Write the sequence in the `sequence` field inside `config.yaml` (uppercase letters only, no quotes).  
-Sequences can use just H/P monomers or all 20 amino acids (automatically converted to H/P).
+Write the sequence in the `sequence` field inside `config.yaml` (uppercase letters only, no quotes). Sequences can use just H/P monomers or all 20 amino acids (automatically converted to H/P).
 
 ### 🔢 Change the Number of Folding Steps
 
@@ -95,9 +81,7 @@ Set the number of folding steps via the `folding_steps` variable under the `simu
 
 ### 📝 Create a Custom Configuration File
 
-Copy the syntax from `config.yaml` and adjust parameters as needed.  
-To use your file, simply update the path in the main script if necessary.  
-Custom configuration files can use any extension supported by PyYAML.
+Copy the syntax from `config.yaml` and adjust parameters as needed. To use your file, simply update the path in the main script if necessary. Custom configuration files can use any extension supported by PyYAML.
 
 Example `config.yaml` structure:
 
@@ -125,9 +109,9 @@ seed: 42
 HP_model/
 ├── output/
 │   └── ...plots and outputs
+│── config.yaml
 ├── src/
 │   ├── __init__.py
-│   ├── config.yaml
 │   ├── main.py
 │   ├── plots.py
 │   ├── protein_class.py
@@ -141,28 +125,24 @@ HP_model/
 
 Main Python files:
 
+- `output/`: Directory containing plots and other outputs
+- `config.yaml`: Input configuration
 - `src/main.py`: Runs simulations and saves results to `output/`
 - `src/protein_class.py`: Defines the `Protein` class and key evolution methods
 - `src/utils.py`: Helper functions for validation, configuration, and sequence conversion
 - `src/plots.py`: Plotting functions for results visualization (energy, compactness, structures, GIF creation)
-- `src/config.yaml`: Main input configuration
 - `test/test.py`: Test suite for code validation
-- `test/config_test.yaml`: Configuration for test runs (do not modify).  
-  To run tests: use `pytest test/test.py`.
+- `test/config_test.yaml`: Configuration for test runs (do not modify). To run tests: use `pytest test/test.py`
 - `requirements.txt`: All dependencies for the project
 
 ## 📚 Theoretical Background
 
-The HP model simplifies protein folding by categorizing amino acids as either hydrophobic (H) or polar (P).  
-Hydrophobic amino acids cluster inside the protein to avoid water, while polar ones remain on the surface.  
-This model is educational and helps introduce protein folding basics, but real folding involves many more factors.
-Researchers use more advanced models for accurate predictions.
+The HP model simplifies protein folding by categorizing amino acids as either hydrophobic (H) or polar (P). Hydrophobic amino acids cluster inside the protein to avoid water, while polar ones remain on the surface. This model is educational and helps introduce protein folding basics, but real folding involves many more factors. Researchers use more advanced models for accurate predictions.
 
 ### 🧩 Folding Algorithm
 
 The folding algorithm is implemented in the `Protein` class (`protein_class.py`), with utility functions in
-`utils.py`.  
-Each evolutionary step involves:
+`utils.py`. Each evolutionary step involves:
 
 1. Select a random monomer (from 1 to length-2).
 2. Randomly choose a move type (`tail_fold` in `utils.py`):  
@@ -174,25 +154,23 @@ Each evolutionary step involves:
 ### ✅ Structure Acceptance
 
 After generating a new structure, its energy is computed and accepted according to the Metropolis algorithm:  
-If the new structure's energy is lower, accept it.  
-If higher, accept with probability:
+- If the new structure's energy is lower, accept it.  
+- If higher, accept with probability:
 
 ```math
-p = e^{-\frac{\Delta E}{k_bT}}
+p = e^{-\frac{\Delta E}{k_B T}}
 ```
 
-where $|\Delta E| > 0$.
-
 *_Notes_*: \
-$k_b$ (Boltzmann constant) is approximated to 1. Temperatures in the config file are interpreted as $T$.
+$k_B$ (Boltzmann constant) is approximated to 1. Temperatures in the config file are interpreted as $T$.
 
-- k_B = 1 simplifies the simulation and numerical comparison between runs.
+- $k_B$ = 1 simplifies the simulation and numerical comparison between runs.
 - Ensure all inputs are consistently non-dimensionalized going forward (energy, temperature, etc.).
 
 ## 🖥️ Execution Example
 
-Example: Simulation of the Myoglobin (Camelus dromedarius) protein
-sequence ([source](https://www.ncbi.nlm.nih.gov/protein/KAB1270346.1?report=fasta)).
+Example: Simulation of the [Myoglobin (Camelus dromedarius) protein
+sequence](https://www.ncbi.nlm.nih.gov/protein/KAB1270346.1?report=fasta).
 
 - Simulate 5000 folding steps as indicated in the `config.yaml` file.
 - Starting temperature: 5.0
@@ -216,4 +194,4 @@ Results (found in the `output/` folder):
   <img src="./output/max_compactness.png" alt="Max compactness folding" width="450"/>
 
 The plots show how energy and compactness stabilize as the temperature decreases. Lowest energy does not necessarily
-correspond to highest compactness.
+correspond to the highest compactness.
