@@ -44,7 +44,7 @@ def test_is_valid_struct_when_correct(structure=correct_structure):
     THEN: I expect a True response from the function
     '''
 
-    assert utils.is_valid_struct(structure)
+    assert utils.is_valid_fold(structure)
 
 
 def test_is_valid_struct_when_wrong_double_point(structure=wrong_str_double_point):
@@ -56,7 +56,7 @@ def test_is_valid_struct_when_wrong_double_point(structure=wrong_str_double_poin
     WHEN: I want to verify if the structure is actually see as wrong with is_valid_struct\n
     THEN: I expect a False response from the function
     '''
-    assert not utils.is_valid_struct(structure)
+    assert not utils.is_valid_fold(structure)
 
 
 def test_is_valid_struct_when_wrong_step_square(structure=wrong_str_skip_step_square):
@@ -68,7 +68,7 @@ def test_is_valid_struct_when_wrong_step_square(structure=wrong_str_skip_step_sq
     WHEN: I want to verify if the structure is actually see as wrong with is_valid_struct\n
     THEN: I expect a False response from the function
     '''
-    assert not utils.is_valid_struct(structure)
+    assert not utils.is_valid_fold(structure)
 
 
 def test_is_valid_struct_when_wrong_step_linear(structure=wrong_str_skip_step_linear):
@@ -80,7 +80,7 @@ def test_is_valid_struct_when_wrong_step_linear(structure=wrong_str_skip_step_li
     WHEN: I want to verify if the structure is actually see as wrong with is_valid_struct\n
     THEN: I expect a False response from the function
     '''
-    assert not utils.is_valid_struct(structure)
+    assert not utils.is_valid_fold(structure)
 
 
 def test_is_valid_struct_when_wrong_return_point(structure=wrong_str_return_point):
@@ -92,7 +92,7 @@ def test_is_valid_struct_when_wrong_return_point(structure=wrong_str_return_poin
     WHEN: I want to verify if the structure is actually see as wrong with is_valid_struct\n
     THEN: I expect a False response from the function
     '''
-    assert not utils.is_valid_struct(structure)
+    assert not utils.is_valid_fold(structure)
 
 
 def test_is_valid_sequence_when_correct_only_H():
@@ -271,9 +271,9 @@ def test_energy_computation():
     '''
     prot1 = p.Protein(config)
     prot1.sequence = seq
-    prot1.struct = correct_structure
+    prot1.fold = correct_structure
     prot1.sequence_length = len(seq)
-    assert isclose(prot1.energy(), -2.)
+    assert isclose(prot1.get_energy(), -2.)
 
 
 def test_get_neig_linear():
@@ -286,7 +286,7 @@ def test_get_neig_linear():
     '''
     prot = p.Protein(config)
     prot.sequence = 'HPHPHPHPPPPHHHHPPP'
-    prot.struct = utils.linear_struct(prot.sequence)
+    prot.fold = utils.linear_fold(prot.sequence)
     prot.sequence_length = len(prot.sequence)
     for i in range(prot.sequence_length):
         assert prot.get_neighbors(i) == ''
@@ -302,7 +302,7 @@ def test_get_neig_composite():
     '''
     prot = p.Protein(config)
     prot.sequence = seq
-    prot.struct = correct_structure
+    prot.fold = correct_structure
     prot.sequence_length = len(seq)
     neig = ['H', '', 'P', 'H', '', '', 'H', 'P', '', '', '', 'H', '']
     for i in range(prot.sequence_length):
@@ -321,11 +321,11 @@ def test_random_fold_valid_struc_linear():
     n = 1000
     prot = p.Protein(config)
     prot.sequence = 'HPHPHPHPHPHHHHHPPHPHPHPPHHPPPPHHPP'
-    prot.struct = utils.linear_struct(prot.sequence)
+    prot.fold = utils.linear_fold(prot.sequence)
     prot.sequence_length = len(prot.sequence)
     for i in range(n):
-        prot.struct = prot.random_fold()
-        assert utils.is_valid_struct(prot.struct)
+        prot.fold = prot.random_fold()
+        assert utils.is_valid_fold(prot.fold)
 
 
 def test_random_fold_valid_struc_composite():
@@ -340,11 +340,11 @@ def test_random_fold_valid_struc_composite():
     n = 1000
     prot = p.Protein(config)
     prot.sequence = seq
-    prot.struct = correct_structure
+    prot.fold = correct_structure
     prot.sequence_length = len(seq)
     for i in range(n):
-        prot.struct = prot.random_fold()
-        assert utils.is_valid_struct(prot.struct)
+        prot.fold = prot.random_fold()
+        assert utils.is_valid_fold(prot.fold)
 
 
 def test_tail_fold_valid_struct_1():
@@ -362,7 +362,7 @@ def test_tail_fold_valid_struct_1():
     previous = correct_structure[0]  # recording the prev monomer
     previous = [previous[0] - x, previous[1] - y]
 
-    assert utils.is_valid_struct(utils.tail_fold(tail, 1, previous))
+    assert utils.is_valid_fold(utils.tail_fold(tail, 1, previous))
 
 
 def test_tail_fold_valid_struct_2():
@@ -380,7 +380,7 @@ def test_tail_fold_valid_struct_2():
     previous = correct_structure[0]  # recording the prev monomer
     previous = [previous[0] - x, previous[1] - y]
 
-    assert utils.is_valid_struct(utils.tail_fold(tail, 2, previous))
+    assert utils.is_valid_fold(utils.tail_fold(tail, 2, previous))
 
 
 def test_tail_fold_valid_struct_3():
@@ -398,7 +398,7 @@ def test_tail_fold_valid_struct_3():
     previous = correct_structure[0]  # recording the prev monomer
     previous = [previous[0] - x, previous[1] - y]
 
-    assert utils.is_valid_struct(utils.tail_fold(tail, 3, previous))
+    assert utils.is_valid_fold(utils.tail_fold(tail, 3, previous))
 
 
 def test_tail_fold_valid_struct_4():
@@ -416,7 +416,7 @@ def test_tail_fold_valid_struct_4():
     previous = correct_structure[0]  # recording the prev monomer
     previous = [previous[0] - x, previous[1] - y]
 
-    assert utils.is_valid_struct(utils.tail_fold(tail, 4, previous))
+    assert utils.is_valid_fold(utils.tail_fold(tail, 4, previous))
 
 
 def test_tail_fold_valid_struct_5():
@@ -434,7 +434,7 @@ def test_tail_fold_valid_struct_5():
     previous = correct_structure[0]  # recording the prev monomer
     previous = [previous[0] - x, previous[1] - y]
 
-    assert utils.is_valid_struct(utils.tail_fold(tail, 5, previous))
+    assert utils.is_valid_fold(utils.tail_fold(tail, 5, previous))
 
 
 def test_tail_fold_valid_struct_6():
@@ -452,7 +452,7 @@ def test_tail_fold_valid_struct_6():
     previous = correct_structure[0]  # recording the prev monomer
     previous = [previous[0] - x, previous[1] - y]
 
-    assert utils.is_valid_struct(utils.tail_fold(tail, 6, previous))
+    assert utils.is_valid_fold(utils.tail_fold(tail, 6, previous))
 
 
 def test_tail_fold_valid_struct_7():
@@ -470,7 +470,7 @@ def test_tail_fold_valid_struct_7():
     previous = correct_structure[0]  # recording the prev monomer
     previous = [previous[0] - x, previous[1] - y]
 
-    assert utils.is_valid_struct(utils.tail_fold(tail, 7, previous))
+    assert utils.is_valid_fold(utils.tail_fold(tail, 7, previous))
 
 
 def test_tail_fold_correct_length_1():
@@ -665,16 +665,16 @@ def test_evolution_minimize_energy():
     # definition of the protein to test
     prot1 = p.Protein(config)
     prot1.sequence = seq
-    prot1.struct = utils.linear_struct(prot1.sequence)
+    prot1.fold = utils.linear_fold(prot1.sequence)
     prot1.sequence_length = len(seq)
-    prot1.steps = 500
-    en1 = prot1.energy()
+    prot1.n_steps = 500
+    en1 = prot1.get_energy()
     # energy shoud be zero for the linear structure
     assert isclose(en1, 0.)
     # evolition
     prot1.evolution()
     # asserts for the energy minimization after the evolution (energy shoul not be grater than zero)
-    assert prot1.energy() <= en1
+    assert prot1.get_energy() <= en1
 
 
 def test_evolution_maximize_compactness():
@@ -688,13 +688,13 @@ def test_evolution_maximize_compactness():
     # definition of the protein to test
     prot1 = p.Protein(config)
     prot1.sequence = seq
-    prot1.struct = utils.linear_struct(prot1.sequence)
+    prot1.fold = utils.linear_fold(prot1.sequence)
     prot1.sequence_length = len(seq)
-    prot1.steps = 500
-    comp1 = prot1.compactness()
+    prot1.n_steps = 500
+    comp1 = prot1.get_compactness()
     # energy shoud be zero for the linear structure
     assert isclose(comp1, 0.)
     # evolitions
     prot1.evolution()
     # asserts for the energy minimization after the evolution (energy shoul not be grater than zero)
-    assert prot1.compactness() >= comp1
+    assert prot1.get_compactness() >= comp1
