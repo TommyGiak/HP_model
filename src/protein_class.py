@@ -142,7 +142,7 @@ class Protein:
         )
 
         # Divide by 2 because each contact (i, j) is counted twice (once for i, once for j)
-        return -e * (count_hh / 2)
+        return -e * (count_hh * 0.5)
 
     def get_compactness(self) -> int:
         """
