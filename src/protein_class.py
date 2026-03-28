@@ -131,13 +131,31 @@ class Protein:
         return prob >= random.uniform(0, 1)
 
     def get_energy(self, e: float = 1.0) -> float:
-        """Compute the total energy of the protein structure."""
-        count_hh = sum(self.get_neighbors(i).count('H') for i in range(self.sequence_length))
-        return -e * count_hh / 2
+        """
+        Calculate the total energy based on the HP model.
+        Only non-consecutive H-H (Hydrophobic) contacts contribute to lowering the system's energy.
+        """
+        count_hh = sum(
+            self.get_neighbors(i).count('H')
+            for i in range(self.sequence_length)
+            if self.sequence[i] == 'H'
+        )
+
+        # Divide by 2 because each contact (i, j) is counted twice (once for i, once for j)
+        return -e * (count_hh / 2)
 
     def get_compactness(self) -> int:
-        """Compute the compactness of the protein structure."""
-        return sum(len(self.get_neighbors(i)) for i in range(self.sequence_length))
+        """
+        Calculate compactness as the total number of unique non-covalent
+        topological contacts in the fold.
+        """
+        total_contacts = sum(
+            len(self.get_neighbors(i))
+            for i in range(self.sequence_length)
+        )
+
+        # Use integer division by 2 to get the actual number of unique contacts
+        return total_contacts // 2
 
     def get_neighbors(self, i: int) -> str:
         """Return string of H/P neighbors for the i-th monomer (excluding backbone)."""
