@@ -1,4 +1,4 @@
-# 🧬 HP Model for Protein Folding
+# HP Model for Protein Folding
 
 This project implements the HP model for protein folding in Python.
 
@@ -15,37 +15,27 @@ This project provides a first look at protein behavior and can be used to study 
 function of temperature and binding energy. Various tests and comparisons are possible, such as observing the folding
 behavior when two random adjacent amino acids are swapped.
 
-## 📋 Table of Contents
+## Installation and Running
 
-1. [Installation & Running](#-installation--running)
-2. [Parameter Settings](#%EF%B8%8F-parameter-settings)
-    1. [Insert the Protein Sequence](#-insert-the-protein-sequence)
-    2. [Change the Number of Folding Steps](#-change-the-number-of-folding-steps)
-    3. [Other Parameters](#-other-parameters)
-    4. [Create a Custom Configuration File](#-create-a-custom-configuration-file)
-3. [Repository Structure](#-repository-structure)
-4. [Theoretical Background](#-theoretical-background)
-    1. [Folding Algorithm](#-folding-algorithm)
-    2. [Structure Acceptance](#-structure-acceptance)
-5. [Execution Example](#%EF%B8%8F-execution-example)
-
-## 🚀 Installation & Running
-
-From your terminal, navigate to your desired folder and clone this repository.
-
-After that, move to the project directory:
+Clone this repository. After that, move to the project directory:
 
 ```shell
 cd HP_model
 ```
 
-And activate the virtual environment:
+And create a Python virtual environment:
+
+```shell
+python -m venv .venv
+```
+
+Next, activate the virtual environment:
 
 ```shell
 source .venv/bin/activate
 ```
 
-Next, install all dependencies running:
+After that, install all dependencies running:
 
 ```shell
 pip install -r requirements.txt
@@ -57,21 +47,21 @@ Finally, run the application:
 python src/main.py
 ```
 
-## ⚙️ Parameter Settings
+## Parameter Settings
 
 You can modify protein sequences, structures, and other parameters by editing the `config.yaml` file or creating a new
 configuration file.
 
-### 🔡 Insert the Protein Sequence
+### Insert the Protein Sequence
 
 Write the sequence in the `sequence` field inside `config.yaml` (uppercase letters only, no quotes). Sequences can use
 just H/P monomers or all 20 amino acids (automatically converted to H/P).
 
-### 🔢 Change the Number of Folding Steps
+### Change the Number of Folding Steps
 
 Set the number of folding steps via the `folding_steps` variable under the `simulation` section in `config.yaml`.
 
-### 🛠 Other Parameters
+### Other Parameters
 
 - Enable or disable annealing: `annealing: true` or `annealing: false` in `simulation`
 - Use a specific initial structure: set `use_structure: true` and provide a list of coordinates in `structure`. Sequence
@@ -80,7 +70,7 @@ Set the number of folding steps via the `folding_steps` variable under the `simu
 - Create a GIF of the process: `create_gif: true` or `create_gif: false` in `plot`
 - Set a random seed: `seed` in `config.yaml` (or `None` for random)
 
-### 📝 Create a Custom Configuration File
+### Create a Custom Configuration File
 
 Copy the syntax from `config.yaml` and adjust parameters as needed. To use your file, simply update the path in the main
 script if necessary. Custom configuration files can use any extension supported by PyYAML.
@@ -105,7 +95,7 @@ plot:
 seed: 42
 ```
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```plaintext
 HP_model/
@@ -137,14 +127,14 @@ Main Python files:
 - `test/config_test.yaml`: Configuration for test runs (do not modify). To run tests: use `pytest test/test.py`
 - `requirements.txt`: All dependencies for the project
 
-## 📚 Theoretical Background
+## Theoretical Background
 
 The HP model simplifies protein folding by categorizing amino acids as either hydrophobic (H) or polar (P). Hydrophobic
 amino acids cluster inside the protein to avoid water, while polar ones remain on the surface. This model is educational
 and helps introduce protein folding basics, but real folding involves many more factors. Researchers use more advanced
 models for accurate predictions.
 
-### 🧩 Folding Algorithm
+### Folding Algorithm
 
 The folding algorithm is implemented in the `Protein` class (`protein_class.py`), with utility functions in
 `utils.py`. Each evolutionary step involves:
@@ -156,29 +146,30 @@ The folding algorithm is implemented in the `Protein` class (`protein_class.py`)
 3. Validate the new structure (no overlaps, neighbor distances = 1). If invalid, repeat.
 4. If valid, accept or reject the new folded structure according to the Metropolis criterion.
 
-### ✅ Structure Acceptance
+### Structure Acceptance
 
-After generating a new structure, its energy is computed and accepted according to the Metropolis algorithm:
-
+After generating a new structure, its energy is computed and accepted according to the Metropolis algorithm.
+In this specific implementation, only topological contacts between H-H monomers decrease the system's energy.
 - If the new structure's energy is lower, accept it.
 - If higher, accept with probability:
 
-```math
+$$
 p = e^{-\frac{\Delta E}{k_B T}}
-```
+$$
 
 *_Notes_*: \
 $k_B$ (Boltzmann constant) is approximated to 1. Temperatures in the config file are interpreted as $T$.
 
 - $k_B$ = 1 simplifies the simulation and numerical comparison between runs.
 - Ensure all inputs are consistently non-dimensionalized going forward (energy, temperature, etc.).
+- The simulation automatically accounts for the "double-counting" of contacts to provide an accurate energy and compactness evaluation.
 
-## 🖥️ Execution Example
+## Execution Example
 
-Example: Simulation of the [Myoglobin (Camelus dromedarius) protein
+This example runs on a simulation of the [Myoglobin (Camelus dromedarius) protein
 sequence](https://www.ncbi.nlm.nih.gov/protein/KAB1270346.1?report=fasta).
 
-- Simulate 5000 folding steps as indicated in the `config.yaml` file.
+- Simulate 5000 folding steps as indicated in the `config.yaml` file
 - Starting temperature: 5.0
 - Annealing: true
 
