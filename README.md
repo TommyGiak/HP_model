@@ -17,13 +17,7 @@ behavior when two random adjacent amino acids are swapped.
 
 ## Installation and Running
 
-Clone this repository. After that, move to the project directory:
-
-```shell
-cd HP_model
-```
-
-And create a Python virtual environment:
+Clone this repository, move to the project directory and create a Python virtual environment:
 
 ```shell
 python -m venv .venv
@@ -52,46 +46,27 @@ python src/main.py
 You can modify protein sequences, structures, and other parameters by editing the `config.yaml` file or creating a new
 configuration file.
 
-### Insert the Protein Sequence
-
-Write the sequence in the `sequence` field inside `config.yaml` (uppercase letters only, no quotes). Sequences can use
-just H/P monomers or all 20 amino acids (automatically converted to H/P).
-
-### Change the Number of Folding Steps
-
-Set the number of folding steps via the `folding_steps` variable under the `simulation` section in `config.yaml`.
-
-### Other Parameters
-
-- Enable or disable annealing: `annealing: true` or `annealing: false` in `simulation`
-- Use a specific initial structure: set `use_structure: true` and provide a list of coordinates in `structure`. Sequence
-  and structure lengths must match!
-- Set initial temperature: `temperature` in `simulation`
-- Create a GIF of the process: `create_gif: true` or `create_gif: false` in `plot`
-- Set a random seed: `seed` in `config.yaml` (or `None` for random)
-
-### Create a Custom Configuration File
-
-Copy the syntax from `config.yaml` and adjust parameters as needed. To use your file, simply update the path in the main
-script if necessary. Custom configuration files can use any extension supported by PyYAML.
-
-Example `config.yaml` structure:
-
 ```yaml
+# Sequences can use just H/P monomers
+# or all 20 amino acids (automatically converted to H/P).
 sequence: MGLSDGEWQLVLNVWGKVEADVAGHGQEVLIRSHVWGECPVLPALLSGVRALSESHQKRLRKDSRDDDGDDGDGDNDNDDGDGDDDDGDDDGDNDNDDDDGDGDDDGDGDDDRDDSDGGGGDHADDDNGNDDGDDDGHPETLEKFDKFKHLKTADEMKASEDLKKHGNTVLTALGGILKKKGHHEAELKPLAQSHATKHKIPVKYLEFISDAIIHVLQSKHPGDFGADAQAAMNKALELFRNDMAAKYKELGFQG
 
+# This is an optional initial structure
 structure:
   use_structure: false
   coordinates: [ [ 0,0 ], [ 0,1 ], ... ]  # only needed if use_structure: true
 
+# Simulation configuration
 simulation:
-  folding_steps: 5000
-  annealing: true
-  temperature: 5.0
+  folding_steps: 5000  # Number of folding steps
+  annealing: true  # Whether to apply annealing or not
+  temperature: 5.0  # Initial annealing temperature
 
+# Plot configuration
 plot:
-  create_gif: true
+  create_gif: true  # Whether to create a gif for representing evolution or not
 
+# Seed for reproducibility (None for random)
 seed: 42
 ```
 
@@ -118,7 +93,7 @@ HP_model/
 Main Python files:
 
 - `output/`: Directory containing plots and other outputs
-- `config.yaml`: Input configuration
+- `config.yaml`: Input and simulation configuration
 - `src/main.py`: Runs simulations and saves results to `output/`
 - `src/protein_class.py`: Defines the `Protein` class and key evolution methods
 - `src/utils.py`: Helper functions for validation, configuration, and sequence conversion
@@ -143,7 +118,7 @@ The folding algorithm is implemented in the `Protein` class (`protein_class.py`)
 2. Randomly choose a move type (`tail_fold` in `utils.py`):  
    1 = 90° clockwise, 2 = 90° counterclockwise, 3 = 180° rotation, 4 = x-axis reflection, 5 = y-axis reflection,  
    6 = symmetry on 1st/3rd quadrants, 7 = symmetry on 2nd/4th quadrants, 8 = diagonal move (if possible).
-3. Validate the new structure (no overlaps, neighbor distances = 1). If invalid, repeat.
+3. Validate the new structure (no overlaps and neighbor distances = 1). If invalid, repeat.
 4. If valid, accept or reject the new folded structure according to the Metropolis criterion.
 
 ### Structure Acceptance
@@ -164,7 +139,7 @@ $k_B$ (Boltzmann constant) is approximated to 1. Temperatures in the config file
 - Ensure all inputs are consistently non-dimensionalized going forward (energy, temperature, etc.).
 - The simulation automatically accounts for the "double-counting" of contacts to provide an accurate energy and compactness evaluation.
 
-## Execution Example
+## Simulation Example
 
 This example runs on a simulation of the [Myoglobin (Camelus dromedarius) protein
 sequence](https://www.ncbi.nlm.nih.gov/protein/KAB1270346.1?report=fasta).
