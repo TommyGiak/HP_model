@@ -6,6 +6,18 @@ sequence: >-
   LKPLAQSHATKHKIPVKYLEFISDAIIHVLQSKHPGDFGADAQAAMNKALELFRNDMAAKYKE
   LGFQG
 
+# Simulation configuration
+simulation:
+  folding_steps: 5000   # Monte Carlo steps
+  annealing: true    # Enable simulated annealing
+  temperature: 5.0     # Initial temperature (used only if annealing: true)
+
+# Plot configuration
+plot:
+  create_gif: true      # Save folding animation as GIF
+
+# Reproducibility
+seed: 42                # Set to None for a random seed
 
 # This is an optional initial example structure
 structure:
@@ -32,16 +44,3 @@ structure:
     [ 0,14 ], [ 1,14 ], [ 2,14 ], [ 3,14 ], [ 4,14 ], [ 5,14 ], [ 6,14 ], [ 7,14 ], [ 8,14 ], [ 9,14 ], [ 10,14 ], [ 11,14 ], [ 12,14 ], [ 13,14 ], [ 14,14 ], [ 15,14 ],
     [ 15,15 ], [ 14,15 ], [ 13,15 ], [ 12,15 ], [ 11,15 ], [ 10,15 ], [ 9,15 ], [ 8,15 ], [ 7,15 ], [ 6,15 ], [ 5,15 ], [ 4,15 ], [ 3,15 ], [ 2,15 ], [ 1,15 ]
   ]
-
-# Simulation configuration
-simulation:
-  folding_steps: 5000   # Monte Carlo steps
-  annealing: true    # Enable simulated annealing
-  temperature: 5.0     # Initial temperature (used only if annealing: true)
-
-# Plot configuration
-plot:
-  create_gif: true      # Save folding animation as GIF
-
-# Reproducibility
-seed: 42                # Set to None for a random seed
