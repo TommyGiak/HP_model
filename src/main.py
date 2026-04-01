@@ -14,7 +14,7 @@ def print_simulation_setup(config):
     print("[HP Model] Simulation setup")
     print(f"Sequence:           {config.sequence}")
     print(f"Sequence length:    {len(config.sequence)}")
-    print(f"Structure:          {'Linear' if not config.use_struct else 'Non-linear'}")
+    print(f"Structure:          {'Non-linear' if config.use_struct else 'Linear'}")
     print(f"Folding steps:      {config.n_steps}")
     print(f"Annealing:          {config.do_annealing}")
     print(f"Temperature:        {config.temperature if config.do_annealing else 'Undefined'}")
