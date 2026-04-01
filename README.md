@@ -125,6 +125,7 @@ The folding algorithm is implemented in the `Protein` class (`protein_class.py`)
 
 After generating a new structure, its energy is computed and accepted according to the Metropolis algorithm.
 In this specific implementation, only topological contacts between H-H monomers decrease the system's energy.
+
 - If the new structure's energy is lower, accept it.
 - If higher, accept with probability:
 
@@ -137,7 +138,8 @@ $k_B$ (Boltzmann constant) is approximated to 1. Temperatures in the config file
 
 - $k_B$ = 1 simplifies the simulation and numerical comparison between runs.
 - Ensure all inputs are consistently non-dimensionalized going forward (energy, temperature, etc.).
-- The simulation automatically accounts for the "double-counting" of contacts to provide an accurate energy and compactness evaluation.
+- The simulation automatically accounts for the "double-counting" of contacts to provide an accurate energy and
+  compactness evaluation.
 
 ## Simulation Example
 

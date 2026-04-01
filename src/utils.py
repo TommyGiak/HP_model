@@ -228,10 +228,10 @@ class Configuration:
             config = yaml.safe_load(f)
 
         # Sequence
-        self.sequence = config['sequence']
+        self.sequence = config['sequence'].replace(' ', '').replace('\n', '')
 
         # Structure options
-        structure_cfg = config.get('structure_options', {})
+        structure_cfg = config.get('structure', {})
         self.use_struct = structure_cfg.get('use_structure')
         self.fold = structure_cfg.get('coordinates') if self.use_struct else None
 
