@@ -76,12 +76,16 @@ seed: 42
 HP_model/
 ├── output/
 │   └── ...plots and outputs
-│── config.yaml
+├── config.yaml
 ├── src/
 │   ├── __init__.py
 │   ├── main.py
+│   ├── protein.py
+│   ├── fold_sampler.py
+│   ├── simulation.py
+│   ├── tracker.py
+│   ├── metropolis.py
 │   ├── plots.py
-│   ├── protein_class.py
 │   └── utils.py
 ├── test/
 │   ├── __init__.py
@@ -94,9 +98,17 @@ Main Python files:
 
 - `output/`: Directory containing plots and other outputs
 - `config.yaml`: Input and simulation configuration
-- `src/main.py`: Runs simulations and saves results to `output/`
-- `src/protein_class.py`: Defines the `Protein` class and key evolution methods
-- `src/utils.py`: Helper functions for validation, configuration, and sequence conversion
+- `src/main.py`: Entry point — initializes the protein, runs the simulation, and saves results to `output/`
+- `src/protein.py`: Defines the `Protein` class with sequence, fold, and physical properties (energy, compactness,
+  neighbors)
+- `src/fold_sampler.py`: Generates valid random folds (self-avoiding walks) via geometric transformations; isolated from
+  simulation logic
+- `src/simulation.py`: Defines the `Simulation` class, which orchestrates the Metropolis evolution loop with optional
+  simulated annealing
+- `src/tracker.py`: Defines `SimulationTracker`, which records energy, compactness, and temperature histories, best-fold
+  snapshots, and optional GIF frames
+- `src/metropolis.py`: Defines the Metropolis step acceptance rule
+- `src/utils.py`: Helper functions for validation, configuration parsing, and sequence conversion
 - `src/plots.py`: Plotting functions for results visualization (energy, compactness, structures, GIF creation)
 - `test/test.py`: Test suite for code validation
 - `test/config_test.yaml`: Configuration for test runs (do not modify). To run tests: use `pytest test/test.py`
@@ -111,7 +123,7 @@ models for accurate predictions.
 
 ### Folding Algorithm
 
-The folding algorithm is implemented in the `Protein` class (`protein_class.py`), with utility functions in
+The folding algorithm is implemented in the `Protein` class (`protein.py`), with utility functions in
 `utils.py`. Each evolutionary step involves:
 
 1. Select a random monomer (from 1 to length-2).

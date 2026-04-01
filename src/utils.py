@@ -1,11 +1,22 @@
 """
-@author: Tommaso Giacometti
+@author: Tommaso Giacometti, Alessandro Quirile
 """
 
 import random
 from math import isclose, sqrt
 
 import yaml
+
+
+def print_simulation_setup(config):
+    """Display the main simulation configuration."""
+    print("[HP Model] Simulation setup")
+    print(f"Sequence:           {config.sequence}")
+    print(f"Sequence length:    {len(config.sequence)}")
+    print(f"Structure:          {'Non-linear' if config.use_struct else 'Linear'}")
+    print(f"Folding steps:      {config.n_steps}")
+    print(f"Annealing:          {config.do_annealing}")
+    print(f"Temperature:        {config.temperature if config.do_annealing else 'Undefined'}")
 
 
 def is_valid_fold(fold: list[list[float]]) -> bool:
@@ -65,7 +76,7 @@ def is_valid_sequence(sequence: str) -> bool:
     return sequence_chars.issubset(allowed_chars)
 
 
-def linear_fold(seq: str) -> list[list[int]]:
+def generate_linear_fold(seq: str) -> list[list[int]]:
     """
     Create a linear structure corresponding to the input sequence.
 
@@ -80,7 +91,6 @@ def linear_fold(seq: str) -> list[list[int]]:
         Linear structure, where each monomer is positioned on the x-axis.
     """
     struct = [[i, 0] for i in range(len(seq))]
-    # print("Linear initial structure assumed")
     return struct
 
 
@@ -182,7 +192,7 @@ def tail_fold(struct: list[list[int]], method: int, previous: list[int]) -> list
     return new_tail
 
 
-def hp_sequence_transform(seq: str) -> str:
+def convert_to_hp(seq: str) -> str:
     """
     Transform a protein sequence of standard amino acids into the HP model sequence.
 

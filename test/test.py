@@ -2,16 +2,23 @@
 @author: Tommaso Giacometti
 """
 
+import copy
 import os
 import random
 import sys
 
 from math import isclose, sqrt
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
+# Use insert(0, ...) so src/ is resolved before any other path entry,
+# preventing standard-library or installed packages from shadowing local
+# modules with the same name (e.g. a system-level 'utils').
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
-import protein_class as p
+import protein as p
 import utils
+from fold_sampler import FoldSampler
+from simulation import Simulation
+from utils import convert_to_hp, generate_linear_fold
 
 config_path = os.path.join(os.path.dirname(__file__), 'config_test.yaml')
 config = utils.Configuration(config_path)
@@ -36,9 +43,9 @@ wrong_str_return_point = [[0, 0], [-1, 0], [-1, 1], [-1, 2], [-1, 1], [0, 1]]
 
 def test_is_valid_struct_when_correct(structure=correct_structure):
     '''
-    Test the is_valid_struct when a correct structure is given, a list of correct structures are given in 
+    Test the is_valid_struct when a correct structure is given, a list of correct structures are given in
     the first part of the file.
-    
+
     GIVEN: a correct structure\n
     WHEN: I want to verify if the structure is actually see as true with is_valid_struct\n
     THEN: I expect a True response from the function
@@ -49,9 +56,9 @@ def test_is_valid_struct_when_correct(structure=correct_structure):
 
 def test_is_valid_struct_when_wrong_double_point(structure=wrong_str_double_point):
     '''
-    Test the is_valid_struct when a wrong structure is given, a list of wrong structures are given in 
+    Test the is_valid_struct when a wrong structure is given, a list of wrong structures are given in
     the first part of the file.
-    
+
     GIVEN: a wrong structure with a same point repited twice\n
     WHEN: I want to verify if the structure is actually see as wrong with is_valid_struct\n
     THEN: I expect a False response from the function
@@ -61,9 +68,9 @@ def test_is_valid_struct_when_wrong_double_point(structure=wrong_str_double_poin
 
 def test_is_valid_struct_when_wrong_step_square(structure=wrong_str_skip_step_square):
     '''
-    Test the is_valid_struct when a wrong structure is given, a list of wrong structures are given in 
+    Test the is_valid_struct when a wrong structure is given, a list of wrong structures are given in
     the first part of the file.
-    
+
     GIVEN: a wrong structure with a point is skipped -> the distance between two consecutive points is sqrt(2)\n
     WHEN: I want to verify if the structure is actually see as wrong with is_valid_struct\n
     THEN: I expect a False response from the function
@@ -73,9 +80,9 @@ def test_is_valid_struct_when_wrong_step_square(structure=wrong_str_skip_step_sq
 
 def test_is_valid_struct_when_wrong_step_linear(structure=wrong_str_skip_step_linear):
     '''
-    Test the is_valid_struct when a wrong structure is given, a list of wrong structures are given in 
+    Test the is_valid_struct when a wrong structure is given, a list of wrong structures are given in
     the first part of the file.
-    
+
     GIVEN: a wrong structure with a point is skipped -> the distance between two consecutive points is 2\n
     WHEN: I want to verify if the structure is actually see as wrong with is_valid_struct\n
     THEN: I expect a False response from the function
@@ -85,9 +92,9 @@ def test_is_valid_struct_when_wrong_step_linear(structure=wrong_str_skip_step_li
 
 def test_is_valid_struct_when_wrong_return_point(structure=wrong_str_return_point):
     '''
-    Test the is_valid_struct when a wrong structure is given, a list of wrong structures are given in 
+    Test the is_valid_struct when a wrong structure is given, a list of wrong structures are given in
     the first part of the file.
-    
+
     GIVEN: a wrong structure with sequence that return on the same point (overlap)\n
     WHEN: I want to verify if the structure is actually see as wrong with is_valid_struct\n
     THEN: I expect a False response from the function
@@ -207,9 +214,9 @@ def test_is_valid_sequence_when_wrong_too_short_1():
 
 
 def test_get_dist_0():
-    ''' 
+    '''
     Test get_dist that computes correctly the euclidean distance
-    
+
     GIVEN: different points in the lattice distance zero\n
     WHEN: I want to compute the euclidean distance\n
     THEN: I expect the correct euclidean distance
@@ -218,9 +225,9 @@ def test_get_dist_0():
 
 
 def test_get_dist_1():
-    ''' 
+    '''
     Test get_dist that computes correctly the euclidean distance
-    
+
     GIVEN: different points in the lattice distance one\n
     WHEN: I want to compute the euclidean distance\n
     THEN: I expect the correct euclidean distance
@@ -229,9 +236,9 @@ def test_get_dist_1():
 
 
 def test_get_dist_2():
-    ''' 
+    '''
     Test get_dist that computes correctly the euclidean distance
-    
+
     GIVEN: different points in the lattice distance 2\n
     WHEN: I want to compute the euclidean distance\n
     THEN: I expect the correct euclidean distance
@@ -240,9 +247,9 @@ def test_get_dist_2():
 
 
 def test_get_dist_sqrt_2():
-    ''' 
+    '''
     Test get_dist that computes correctly the euclidean distance
-    
+
     GIVEN: different points in the lattice distance sqrt(2)\n
     WHEN: I want to compute the euclidean distance\n
     THEN: I expect the correct euclidean distance
@@ -251,9 +258,9 @@ def test_get_dist_sqrt_2():
 
 
 def test_get_dist_2_sqrt_2():
-    ''' 
+    '''
     Test get_dist that computes correctly the euclidean distance
-    
+
     GIVEN: different points in the lattice distance 2*sqrt(2)\n
     WHEN: I want to compute the euclidean distance\n
     THEN: I expect the correct euclidean distance
@@ -286,7 +293,7 @@ def test_get_neig_linear():
     '''
     prot = p.Protein(config)
     prot.sequence = 'HPHPHPHPPPPHHHHPPP'
-    prot.fold = utils.linear_fold(prot.sequence)
+    prot.fold = generate_linear_fold(prot.sequence)
     prot.sequence_length = len(prot.sequence)
     for i in range(prot.sequence_length):
         assert prot.get_neighbors(i) == ''
@@ -321,10 +328,11 @@ def test_random_fold_valid_struc_linear():
     n = 1000
     prot = p.Protein(config)
     prot.sequence = 'HPHPHPHPHPHHHHHPPHPHPHPPHHPPPPHHPP'
-    prot.fold = utils.linear_fold(prot.sequence)
+    prot.fold = generate_linear_fold(prot.sequence)
     prot.sequence_length = len(prot.sequence)
+    sampler = FoldSampler()
     for i in range(n):
-        prot.fold = prot.random_fold()
+        prot.fold = sampler.sample(prot)
         assert utils.is_valid_fold(prot.fold)
 
 
@@ -342,8 +350,9 @@ def test_random_fold_valid_struc_composite():
     prot.sequence = seq
     prot.fold = correct_structure
     prot.sequence_length = len(seq)
+    sampler = FoldSampler()
     for i in range(n):
-        prot.fold = prot.random_fold()
+        prot.fold = sampler.sample(prot)
         assert utils.is_valid_fold(prot.fold)
 
 
@@ -586,7 +595,7 @@ def test_diagonal_move_length():
 def test_diagonal_move_equal_struct():
     '''
     Test that diagolan_move lets unchanged the structure from the second monomer.
-    
+
     GIVEN: a structure starting in [0,0]
     WHEN: I want to move the first monomer on a diagonal to fold the protein
     THEN: the structure starting from the second monomer should not change
@@ -598,7 +607,7 @@ def test_diagonal_move_equal_struct():
 def test_diagonal_move_first_mon_move():
     '''
     Test that diagolan_move moves the first monomer near the second one.
-    
+
     GIVEN: a structure starting in [0,0]
     WHEN: I want to move the first monomer on a diagonal to fold the protein
     THEN: I expect the distance between first and second monomer equal to one
@@ -619,24 +628,24 @@ def test_diagonal_move_first_mon_move():
 def test_hp_sequence_transform_letters_correct():
     '''
     Test that hp_sequence_transform return a str with only H and P.
-    
+
     GIVEN: a list of random sequences and an invalid sequence
     WHEN: I want to convert a complete amino-acid sequence into a sequence with only H and P
     THEN: I expect a string as return containing only H and P
     '''
-    assert set(utils.hp_sequence_transform(seq2)) == {'H', 'P'}
+    assert set(convert_to_hp(seq2)) == {'H', 'P'}
 
 
 def test_hp_sequence_transform_letters_wrong():
     '''
     Test that hp_sequence_transform fails with a invalid sequence
-    
+
     GIVEN: an invalid sequence
     WHEN: I want to convert a complete amino-acid sequence into a sequence with only H and P
     THEN: I and error arised in the function
     '''
     try:
-        s = utils.hp_sequence_transform(seq_invalid)
+        s = convert_to_hp(seq_invalid)
         raise ValueError('An invalid sequence is passed')
     except:
         pass
@@ -645,19 +654,19 @@ def test_hp_sequence_transform_letters_wrong():
 def test_hp_sequence_transform_lenght_correct():
     '''
     Test that hp_sequence_transform conserve the length of the sequence.
-    
+
     GIVEN: a list of random sequences
     WHEN: I want to convert a complete amino-acid sequence into a sequence with only H and P
     THEN: I expect that the converted string has the same lenght than before
     '''
-    assert len(utils.hp_sequence_transform(seq2)) == len(seq2)
+    assert len(convert_to_hp(seq2)) == len(seq2)
 
 
 def test_evolution_minimize_energy():
     '''
-    Test that the evolution of the protein takes to a minimization of the energy. 
+    Test that the evolution of the protein takes to a minimization of the energy.
     The energy should never be grater than zero
-    
+
     GIVEN: a list of random sequences
     WHEN: I evolve the system for a certain number of steps
     THEN: I expect that the energy of the protein decrease (or remain equal to zero)
@@ -665,22 +674,24 @@ def test_evolution_minimize_energy():
     # definition of the protein to test
     prot1 = p.Protein(config)
     prot1.sequence = seq
-    prot1.fold = utils.linear_fold(prot1.sequence)
+    prot1.fold = generate_linear_fold(prot1.sequence)
     prot1.sequence_length = len(seq)
-    prot1.n_steps = 500
     en1 = prot1.get_energy()
     # energy shoud be zero for the linear structure
     assert isclose(en1, 0.)
-    # evolition
-    prot1.evolution()
+    # evolution: use a config copy with 500 steps
+    sim_config = copy.copy(config)
+    sim_config.n_steps = 500
+    sim = Simulation(prot1, sim_config)
+    sim.run()
     # asserts for the energy minimization after the evolution (energy shoul not be grater than zero)
     assert prot1.get_energy() <= en1
 
 
 def test_evolution_maximize_compactness():
     '''
-    Test that the evolution of the protein takes does not takes the compactness below zero. 
-    
+    Test that the evolution of the protein takes does not takes the compactness below zero.
+
     GIVEN: a list of random sequences
     WHEN: I evolve the system for a certain number of steps
     THEN: I expect that the compactness of the protein never goes below zero
@@ -688,13 +699,15 @@ def test_evolution_maximize_compactness():
     # definition of the protein to test
     prot1 = p.Protein(config)
     prot1.sequence = seq
-    prot1.fold = utils.linear_fold(prot1.sequence)
+    prot1.fold = generate_linear_fold(prot1.sequence)
     prot1.sequence_length = len(seq)
-    prot1.n_steps = 500
     comp1 = prot1.get_compactness()
     # energy shoud be zero for the linear structure
     assert isclose(comp1, 0.)
-    # evolitions
-    prot1.evolution()
+    # evolution: use a config copy with 500 steps
+    sim_config = copy.copy(config)
+    sim_config.n_steps = 500
+    sim = Simulation(prot1, sim_config)
+    sim.run()
     # asserts for the energy minimization after the evolution (energy shoul not be grater than zero)
     assert prot1.get_compactness() >= comp1
