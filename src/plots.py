@@ -19,9 +19,9 @@ def generate_plots(
         config,
 ) -> None:
     """Generate all output plots and optionally create the evolution GIF."""
-    view(protein, tracker, tit="Final configuration", filename="final.png")
-    view_min_energy(protein, tracker, filename="min_energy.png")
-    view_max_compactness(protein, tracker, filename="max_compactness.png")
+    plot_fold(protein, tracker, tit="Final configuration", filename="final.png")
+    plot_min_energy_fold(protein, tracker, filename="min_energy.png")
+    plot_max_compactness_fold(protein, tracker, filename="max_compactness.png")
     plot_energy(tracker, filename="energy_evolution.png", annealing=config.do_annealing)
     plot_compactness(tracker, filename="compactness_evolution.png", annealing=config.do_annealing)
 
@@ -29,7 +29,7 @@ def generate_plots(
         create_gif(protein, tracker, filename="evolution.gif")
 
 
-def view(
+def plot_fold(
         protein: Protein,
         tracker: Optional[SimulationTracker] = None,
         save: bool = True,
@@ -84,7 +84,7 @@ def view(
         plt.savefig(f"output/{filename}", format="png", bbox_inches="tight", dpi=200)
 
 
-def view_min_energy(
+def plot_min_energy_fold(
         protein: Protein,
         tracker: SimulationTracker,
         save: bool = True,
@@ -118,7 +118,7 @@ def view_min_energy(
         plt.savefig(f"output/{filename}", format="png", bbox_inches="tight", dpi=200)
 
 
-def view_max_compactness(
+def plot_max_compactness_fold(
         protein: Protein,
         tracker: SimulationTracker,
         save: bool = True,
