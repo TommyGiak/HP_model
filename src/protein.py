@@ -69,7 +69,7 @@ class Protein:
             if self.sequence[i] == 'H':
                 neighbors = self.get_neighbors(i)
                 count_hh += neighbors.count('H')
-        energy = -e * (count_hh / 2)
+        energy = -e * (count_hh * 0.5)
         return energy
 
     def get_compactness(self) -> int:
