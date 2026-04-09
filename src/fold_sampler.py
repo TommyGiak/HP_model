@@ -6,7 +6,9 @@ import math
 import random
 from typing import TYPE_CHECKING, List, Optional
 
-import utils
+import geometry
+import transforms
+import validation
 
 if TYPE_CHECKING:
     from protein import Protein
@@ -24,7 +26,7 @@ def _attempt_fold(protein: "Protein") -> Optional[List[List[int]]]:
     tail = [list(coord) for coord in protein.fold[index:]]
 
     # Diagonal move is allowed when previous and next monomers are not aligned
-    dist = utils.get_distance(protein.fold[index - 1], protein.fold[index + 1])
+    dist = geometry.get_distance(protein.fold[index - 1], protein.fold[index + 1])
     diag_move = math.isclose(dist, math.sqrt(2))
 
     # Shift tail to origin for transformation
@@ -35,13 +37,13 @@ def _attempt_fold(protein: "Protein") -> Optional[List[List[int]]]:
     ]
 
     method = random.randint(1, 8) if diag_move else random.randint(1, 7)
-    tail = utils.tail_fold(tail, method, previous)
+    tail = transforms.tail_fold(tail, method, previous)
 
     # Shift tail back to correct lattice position
     tail = [[cx + x, cy + y] for cx, cy in tail]
     new_fold = protein.fold[:index] + tail
 
-    return new_fold if utils.is_valid_fold(new_fold) else None
+    return new_fold if validation.is_valid_fold(new_fold) else None
 
 
 class FoldSampler:

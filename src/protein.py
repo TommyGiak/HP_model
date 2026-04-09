@@ -3,7 +3,10 @@ Protein domain model: sequence, structure, and energy calculations.
 @author: Tommaso Giacometti, Alessandro Quirile
 """
 
+import config
+import geometry
 import utils
+import validation
 
 
 class Protein:
@@ -15,23 +18,23 @@ class Protein:
 
     Parameters
     ----------
-    config : utils.Configuration
+    config : config.Configuration
         Configuration object with sequence and optional initial structure.
     """
 
-    def __init__(self, config: utils.Configuration) -> None:
+    def __init__(self, config: config.Configuration) -> None:
         self._init_sequence(config)
         self._init_structure(config)
 
-    def _init_sequence(self, config: utils.Configuration) -> None:
+    def _init_sequence(self, config: config.Configuration) -> None:
         """Parse and validate the protein sequence, converting to HP if needed."""
-        if utils.is_valid_sequence(config.sequence):
+        if validation.is_valid_sequence(config.sequence):
             self.sequence = config.sequence
         else:
             self.sequence = utils.convert_to_hp(config.sequence)
         self.sequence_length = len(self.sequence)
 
-    def _init_structure(self, config: utils.Configuration) -> None:
+    def _init_structure(self, config: config.Configuration) -> None:
         """Initialize the 2D lattice fold, either linear or user-provided."""
 
         if config.use_struct:
@@ -39,9 +42,9 @@ class Protein:
                 raise AssertionError("Sequence and structure lengths do not match")
             self.fold = config.fold
         else:
-            self.fold = utils.generate_linear_fold(self.sequence)
+            self.fold = geometry.generate_linear_fold(self.sequence)
 
-        if not utils.is_valid_fold(self.fold):
+        if not validation.is_valid_fold(self.fold):
             raise AssertionError(
                 "Invalid structure: not a self-avoiding walk (SAW) "
                 "or distances between consecutive points differ from 1"

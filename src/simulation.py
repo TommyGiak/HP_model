@@ -6,7 +6,7 @@ from typing import Tuple
 
 from tqdm.auto import tqdm
 
-import utils
+from config import Configuration
 from fold_sampler import FoldSampler
 from metropolis import metropolis_rule
 from protein import Protein
@@ -25,14 +25,14 @@ class Simulation:
     ----------
     protein : Protein
         The protein to fold.
-    config : utils.Configuration
+    config : Configuration
         Simulation configuration (steps, annealing, temperature, GIF).
     sampler : FoldSampler, optional
         Fold generation strategy. Defaults to FoldSampler().
         Can be replaced with any object implementing `.sample(protein)` for extensibility.
     """
 
-    def __init__(self, protein: Protein, config: utils.Configuration, sampler: FoldSampler = None) -> None:
+    def __init__(self, protein: Protein, config: Configuration, sampler: FoldSampler = None) -> None:
         self.protein = protein
         self.n_steps = config.n_steps
         self.do_annealing = config.do_annealing

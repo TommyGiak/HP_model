@@ -5,14 +5,14 @@ Entry point for the HP model protein folding simulation.
 import random
 
 import plots
-import utils
+from config import Configuration
 from protein import Protein
 from simulation import Simulation
 
 if __name__ == "__main__":
-    config = utils.Configuration("config.yaml")
+    config = Configuration("config.yaml")
     random.seed(config.seed)
-    utils.print_simulation_setup(config)
+    config.print_simulation_setup()
 
     protein = Protein(config)
     plots.plot_fold(protein, tit="Initial configuration", filename="initial.png")

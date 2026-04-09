@@ -86,6 +86,10 @@ HP_model/
 │   ├── tracker.py
 │   ├── metropolis.py
 │   ├── plots.py
+│   ├── config.py
+│   ├── geometry.py
+│   ├── validation.py
+│   ├── transforms.py
 │   └── utils.py
 ├── test/
 │   ├── __init__.py
@@ -110,6 +114,13 @@ Main Python files:
 - `src/metropolis.py`: Defines the Metropolis step acceptance rule
 - `src/utils.py`: Helper functions for validation, configuration parsing, and sequence conversion
 - `src/plots.py`: Plotting functions for results visualization (energy, compactness, structures, GIF creation)
+- `src/config.py`: Handles YAML configuration parsing and provides structured access to simulation parameters
+- `src/geometry.py`: Provides geometric utilities for protein folds (distance computation, linear structure generation,
+  coordinate handling)
+- `src/validation.py`: Contains validation utilities for sequences and protein folds (self-avoiding walk checks, input
+  validation)
+- `src/transforms.py`: Implements geometric transformations used for fold sampling (rotations, reflections, diagonal and
+  local moves)
 - `test/test.py`: Test suite for code validation
 - `test/config_test.yaml`: Configuration for test runs (do not modify). To run tests: use `pytest test/test.py`
 - `requirements.txt`: All dependencies for the project
