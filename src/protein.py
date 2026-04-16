@@ -50,7 +50,7 @@ class Protein:
                 "or distances between consecutive points differ from 1"
             )
 
-    def get_energy(self, e: float = 1.0) -> float:
+    def get_energy(self, epsilon: float = 1.0) -> float:
         """
         Calculate total energy via the HP model.
 
@@ -59,7 +59,7 @@ class Protein:
 
         Parameters
         ----------
-        e : float
+        epsilon : float
             Energy scale factor (default 1.0).
 
         Returns
@@ -72,7 +72,7 @@ class Protein:
             if self.sequence[i] == 'H':
                 neighbors = self.get_neighbors(i)
                 count_hh += neighbors.count('H')
-        energy = -e * (count_hh * 0.5)
+        energy = -epsilon * (count_hh * 0.5)
         return energy
 
     def get_compactness(self) -> int:

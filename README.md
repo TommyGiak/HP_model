@@ -1,57 +1,39 @@
-# HP Model for Protein Folding
+# HP Lattice Model for Protein Folding
 
-This project implements the HP model for protein folding in Python.
+This project implements the HP lattice model for protein folding in Python.
 
-The HP model is a simplified approach to explore basic protein folding behaviors via Monte Carlo simulations on the free
-energy of protein bonds. It reduces protein sequences to two amino acid categories: H (hydrophobic) and P (polar). For
+The HP lattice model is a simplified approach to explore basic protein folding behaviors via Monte Carlo simulations
+that explore the free energy landscape of protein configurations. It reduces protein sequences to two amino acid
+categories: H (hydrophobic) and P (polar). For
 more information, see [this paper](https://pubs.acs.org/doi/10.1021/ma00200a030) or
 the [theory section](#-theoretical-background) below.
 
-A command-line application is included, allowing users to input a protein sequence (using all 20 standard amino acids or
-H/P only), run HP model simulations at chosen temperatures, optionally apply annealing algorithms, and output the energy
-evolution, protein structures, minimum energy configurations, and compactness.
-
-This project provides a first look at protein behavior and can be used to study transitions to native states as a
-function of temperature and binding energy. Various tests and comparisons are possible, such as observing the folding
-behavior when two random adjacent amino acids are swapped.
+A command-line interface allows running simulations with configurable temperature and optional annealing, producing
+energy evolution, structures (foldings), minimum-energy configurations, and compactness.
 
 ## Installation and Running
 
-Clone this repository, move to the project directory and create a Python virtual environment:
+Clone the repository, move to the project directory, create a Python virtual environment, install dependencies, and run
+the application:
 
 ```shell
 python -m venv .venv
-```
-
-Next, activate the virtual environment:
-
-```shell
 source .venv/bin/activate
-```
-
-After that, install all dependencies running:
-
-```shell
 pip install -r requirements.txt
-```
-
-Finally, run the application:
-
-```shell
 python src/main.py
 ```
 
 ## Parameter Settings
 
 You can modify protein sequences, structures, and other parameters by editing the `config.yaml` file or creating a new
-configuration file.
+one.
 
 ```yaml
 # Sequences can use just H/P monomers
 # or all 20 amino acids (automatically converted to H/P).
-sequence: MGLSDGEWQLVLNVWGKVEADVAGHGQEVLIRSHVWGECPVLPALLSGVRALSESHQKRLRKDSRDDDGDDGDGDNDNDDGDGDDDDGDDDGDNDNDDDDGDGDDDGDGDDDRDDSDGGGGDHADDDNGNDDGDDDGHPETLEKFDKFKHLKTADEMKASEDLKKHGNTVLTALGGILKKKGHHEAELKPLAQSHATKHKIPVKYLEFISDAIIHVLQSKHPGDFGADAQAAMNKALELFRNDMAAKYKELGFQG
+sequence: MGLSDGEWQLVLNV...
 
-# This is an optional initial structure
+# This is an optional initial structure (fold)
 structure:
   use_structure: false
   coordinates: [ [ 0,0 ], [ 0,1 ], ... ]  # only needed if use_structure: true
@@ -66,10 +48,11 @@ simulation:
 plot:
   create_gif: true  # Whether to create a gif for representing evolution or not
 
-# Seed for reproducibility (None for random)
+# Seed for reproducibility (set none for random)
 seed: 42
 ```
 
+<!--
 ## Repository Structure
 
 ```plaintext
@@ -125,29 +108,68 @@ Main Python files:
 - `test/config_test.yaml`: Configuration for test runs (do not modify). To run tests: use `pytest test/test.py`
 - `requirements.txt`: All dependencies for the project
 
+-->
+
 ## Theoretical Background
 
-The HP model simplifies protein folding by categorizing amino acids as either hydrophobic (H) or polar (P). Hydrophobic
-amino acids cluster inside the protein to avoid water, while polar ones remain on the surface. This model is educational
-and helps introduce protein folding basics, but real folding involves many more factors. Researchers use more advanced
-models for accurate predictions.
+Protein folding is the biological process through which proteins acquire their three-dimensional structure, known as the
+native state (or native conformation). This structure is essential for the protein’s biological function and emerges
+through a self-assembly process driven by non-covalent interactions. When folding occurs incorrectly (misfolding),
+proteins can become dysfunctional and may lead to disease.
 
-### Folding Algorithm
+Protein folding can be seen as a descent toward a stable state ruled by thermodynamic principles. The native
+conformation is generally considered the state of minimum free energy. This minimum corresponds to the most stable
+thermodynamic equilibrium, where internal forces and biological interactions are balanced, and no spontaneous changes
+can further reduce the energy. The folding process is often visualized as an energy landscape, where the native state
+lies in the deepest region (global minimum).
 
-The folding algorithm is implemented in the `Protein` class (`protein.py`), with utility functions in
-`utils.py`. Each evolutionary step involves:
+The HP lattice model simplifies protein folding by categorizing amino acids as either hydrophobic (H) or polar (P).
+Hydrophobic amino acids tend to cluster inside the protein to avoid water, while polar residues remain on the surface.
+This model is mainly educational and helps introduce the basic principles of protein folding, although real protein
+folding involves many additional factors. More advanced models are used for accurate predictions.
 
-1. Select a random monomer (from 1 to length-2).
-2. Randomly choose a move type (`tail_fold` in `utils.py`):  
-   1 = 90° clockwise, 2 = 90° counterclockwise, 3 = 180° rotation, 4 = x-axis reflection, 5 = y-axis reflection,  
-   6 = symmetry on 1st/3rd quadrants, 7 = symmetry on 2nd/4th quadrants, 8 = diagonal move (if possible).
-3. Validate the new structure (no overlaps and neighbor distances = 1). If invalid, repeat.
-4. If valid, accept or reject the new folded structure according to the Metropolis criterion.
+### Monte Carlo simulation algorithm
 
-### Structure Acceptance
+1. $\alpha := $ initial protein fold
+2. $T := $ initial temperature for annealing
+3. Repeat for $n$ steps:
+    4. Optionally, decrease temperature $T$ (anneal)
+    5. Compute $E(\alpha)$
+    6. Generate new random fold $\alpha'$
+    7. $\Delta E := E(\alpha') - E(\alpha)$
+    8. If $\Delta E < 0$:
+        9. $\alpha \leftarrow \alpha'$  // Accept new fold $\alpha'$
+    9. Else:
+        10. Accept new fold with probability $p = e^{-\frac{\Delta E}{k_B T}}$
 
-After generating a new structure, its energy is computed and accepted according to the Metropolis algorithm.
-In this specific implementation, only topological contacts between H-H monomers decrease the system's energy.
+### Computing $E(\alpha)$
+
+The energy $E$ of a fold $\alpha$ is defined by the number of non-consecutive H-H contacts. For every pair of H-monomers
+that are adjacent on the lattice but not in the primary sequence (backbone), the system's energy is reduced by a factor
+of $\varepsilon = 1$.
+
+1. $n_{contacts}:= 0$
+2. For each monomer $i$ in the protein sequence:
+    3. If monomer $i$ is Hydrophobic:
+        4. neighbors($i$) $\leftarrow$ get_neighbors($i$) // excluding $i \pm 1$ neighbors
+        5. $n_{contacts} \leftarrow n_{contacts} +$ neighbors($i$)
+        6. $E(\alpha) \leftarrow - \varepsilon \times \frac{n_{contacts}}{2}$  // unique contacts
+8. return $E(\alpha)$
+
+### Generating a Random Fold
+
+A random monomer (between 1 and length-2) of the protein is selected and the tail starting from that position is
+modified using a random geometric transformation, such as a rotation, reflection, or diagonal move when allowed. The
+transformed tail is then reattached to the unchanged part of the protein. The new configuration is accepted only if it
+forms a valid self-avoiding walk, ensuring that no overlaps occur. Once validated, the resulting configuration becomes
+the new protein fold.
+
+### Folding Acceptance
+
+After generating a random fold, its energy is computed and accepted according to
+the [Metropolis algorithm](https://en.wikipedia.org/wiki/Metropolis–Hastings_algorithm).
+In this specific implementation, only topological contacts between H-H monomers decrease the system's energy. More
+formally:
 
 - If the new structure's energy is lower, accept it.
 - If higher, accept with probability:
@@ -156,22 +178,26 @@ $$
 p = e^{-\frac{\Delta E}{k_B T}}
 $$
 
-*_Notes_*: \
-$k_B$ (Boltzmann constant) is approximated to 1. Temperatures in the config file are interpreted as $T$.
+Where:
 
-- $k_B$ = 1 simplifies the simulation and numerical comparison between runs.
-- Ensure all inputs are consistently non-dimensionalized going forward (energy, temperature, etc.).
-- The simulation automatically accounts for the "double-counting" of contacts to provide an accurate energy and
-  compactness evaluation.
+- $e$ — [Euler's number](https://en.wikipedia.org/wiki/E_(mathematical_constant)) (≈ 2.71828)
+- $\Delta E$ — energy difference between folds
+- $k_B$ — [Boltzmann constant](https://en.wikipedia.org/wiki/Boltzmann_constant) (set to 1)
+- $T$ — temperature (for optional annealing)
+
+**Notes**
+
+- $k_B = 1$ simplifies the simulation and comparisons between runs
+- All quantities are treated as dimensionless
+- Double-counting of contacts is automatically handled for correct energy and compactness
 
 ## Simulation Example
 
 This example runs on a simulation of the [Myoglobin (Camelus dromedarius) protein
 sequence](https://www.ncbi.nlm.nih.gov/protein/KAB1270346.1?report=fasta).
 
-- Simulate 5000 folding steps as indicated in the `config.yaml` file
-- Starting temperature: 5.0
-- Annealing: true
+- Simulate 5000 folding steps
+- Starting annealing temperature: 5.0
 
 Results (found in the `output/` folder):
 
@@ -190,5 +216,5 @@ Results (found in the `output/` folder):
 - Maximum compactness folding\
   <img src="./output/max_compactness.png" alt="Max compactness folding" width="450"/>
 
-The plots show how energy and compactness stabilize as the temperature decreases. Lowest energy does not necessarily
-correspond to the highest compactness.
+The plots show how energy and compactness stabilize as the temperature decreases. The lowest energy configuration does
+not necessarily correspond to the highest compactness.
