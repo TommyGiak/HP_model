@@ -1,146 +1,198 @@
 """
+Plotting utilities for protein folding simulation results.
 @author: Tommaso Giacometti
 """
+from typing import Optional
+
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import PillowWriter
 from tqdm.auto import tqdm
 
-from protein_class import Protein
+from protein import Protein
+from tracker import SimulationTracker
 
 
-def view(protein: Protein, save=True, tit=None, filename="protein.png"):
-    '''
-    Function to plot the protein structure with matplotlib.
-    As first argument the protein class instance of the desired protein is needed.
-    Title can be optionally inserted.
-    If save == True the plot will be also saved as pdf.
-    '''
-    x = []  # x coordinates of the monomers (ordered)
-    y = []  # y coordinates of the monomers (ordered)
+def generate_plots(
+        protein: Protein,
+        tracker: SimulationTracker,
+        config,
+) -> None:
+    """Generate all output plots and optionally create the evolution GIF."""
+    plot_fold(protein, tracker, tit="Final configuration", filename="final.png")
+    plot_min_energy_fold(protein, tracker, filename="min_energy.png")
+    plot_max_compactness_fold(protein, tracker, filename="max_compactness.png")
+    plot_energy(tracker, filename="energy_evolution.png", annealing=config.do_annealing)
+    plot_compactness(tracker, filename="compactness_evolution.png", annealing=config.do_annealing)
+
+    if config.do_gif:
+        create_gif(protein, tracker, filename="evolution.gif")
+
+
+def plot_fold(
+        protein: Protein,
+        tracker: Optional[SimulationTracker] = None,
+        save: bool = True,
+        tit: Optional[str] = None,
+        filename: str = "protein.png",
+) -> None:
+    """
+    Plot the current protein fold.
+
+    Parameters
+    ----------
+    protein : Protein
+        Protein to visualize.
+    tracker : SimulationTracker, optional
+        If provided, used to compute the normalized compactness label.
+        If None (e.g., before simulation starts), compactness ratio defaults to 1.0.
+    save : bool
+        Save the figure to output/.
+    tit : str, optional
+        Plot title.
+    filename : str
+        Output filename.
+    """
+    x = [protein.fold[i][0] for i in range(protein.sequence_length)]
+    y = [protein.fold[i][1] for i in range(protein.sequence_length)]
 
     fig, ax = plt.subplots()
-    for i in range(protein.sequence_length):
-        x.append(protein.fold[i][0])
-        y.append(protein.fold[i][1])
     ax.plot(x, y, alpha=0.5)
-    for i, coord in enumerate(protein.fold):
+    for i in range(protein.sequence_length):
         ax.scatter(x[i], y[i], marker='$' + protein.sequence[i] + '$', s=20, color='red')
+
     ax.set_xlim(min(x) - 6, max(x) + 6)
     ax.set_ylim(min(y) - 6, max(y) + 6)
     ax.grid(alpha=0.2)
+
     if tit is not None:
         ax.set_title(tit)
-    en = protein.get_energy()
-    comp = protein.get_compactness()
-    string = f'Energy: {en}'
-    string_comp = f'Compactness: {comp / (max(protein.compactness_evolution) + 10e-15):.2f}'  # the +10e-15 is used for numerical stability (avoid division by 0)
-    ax.text(0.01, 0.99, string, ha='left', va='top', transform=ax.transAxes)
-    ax.text(0.01, 0.95, string_comp, ha='left', va='top', transform=ax.transAxes)
+
+    energy = protein.get_energy()
+    compactness = protein.get_compactness()
+
+    if tracker is not None:
+        max_comp = max(tracker.compactness_evolution) + 1e-14
+    else:
+        max_comp = compactness + 1e-14  # ratio → 1.0 before simulation
+
+    ax.text(0.01, 0.99, f'Energy: {energy}', ha='left', va='top', transform=ax.transAxes)
+    ax.text(0.01, 0.95, f'Compactness: {compactness / max_comp:.2f}', ha='left', va='top', transform=ax.transAxes)
+
     plt.show(block=False)
     if save:
         plt.savefig(f"output/{filename}", format="png", bbox_inches="tight", dpi=200)
 
 
-def view_min_energy(protein, save=True, filename="min_energy.png"):
-    '''
-    Function to plot the protein structure founded whit less energy with matplotlib.
-    As first argument the protein class instance of the desired protein is needed.
-    The plot can be saved with save = True as pdf
-    '''
-    x = []  # x coordinates of the monomers (ordered)
-    y = []  # y coordinates of the monomers (ordered)
+def plot_min_energy_fold(
+        protein: Protein,
+        tracker: SimulationTracker,
+        save: bool = True,
+        filename: str = "min_energy.png",
+) -> None:
+    """Plot the minimum-energy fold recorded during the simulation."""
+    fold = tracker.min_energy_fold
+    x = [fold[i][0] for i in range(protein.sequence_length)]
+    y = [fold[i][1] for i in range(protein.sequence_length)]
 
     fig, ax = plt.subplots()
-    for i in range(protein.sequence_length):
-        x.append(protein.min_energy_fold[i][0])
-        y.append(protein.min_energy_fold[i][1])
     ax.plot(x, y, alpha=0.5)
-    for i, coord in enumerate(protein.fold):
+    for i in range(protein.sequence_length):
         ax.scatter(x[i], y[i], marker='$' + protein.sequence[i] + '$', s=20, color='red')
+
     ax.set_xlim(min(x) - 6, max(x) + 6)
     ax.set_ylim(min(y) - 6, max(y) + 6)
     ax.grid(alpha=0.2)
-    en = min(protein.energy_evolution)
-    comp = protein.compactness_evolution[protein.energy_evolution.index(en)]
-    string = f'Energy: {en}'
-    string_comp = f'Compactness: {comp / (max(protein.compactness_evolution) + 10e-15):.2f}'  #  + 10e-15 for numerical stability (avoid division by 0)
-    ax.text(0.01, 0.99, string, ha='left', va='top', transform=ax.transAxes)
-    ax.text(0.01, 0.95, string_comp, ha='left', va='top', transform=ax.transAxes)
     ax.set_title('Min energy structure')
+
+    energy = min(tracker.energy_evolution)
+    idx = tracker.energy_evolution.index(energy)
+    compactness = tracker.compactness_evolution[idx]
+    max_comp = max(tracker.compactness_evolution) + 1e-14
+
+    ax.text(0.01, 0.99, f'Energy: {energy}', ha='left', va='top', transform=ax.transAxes)
+    ax.text(0.01, 0.95, f'Compactness: {compactness / max_comp:.2f}', ha='left', va='top', transform=ax.transAxes)
+
     plt.show(block=False)
     if save:
         plt.savefig(f"output/{filename}", format="png", bbox_inches="tight", dpi=200)
 
 
-def view_max_compactness(protein, save=True, filename="max_compactness.png"):
-    '''
-    Function to plot the protein structure founded with the max compactness.
-    As first argument the protein class instance of the desired protein is needed.
-    The plot can be saved with save = True as pdf
-
-    '''
-    x = []  # x coordinates of the monomers (ordered)
-    y = []  # y coordinates of the monomers (ordered)
+def plot_max_compactness_fold(
+        protein: Protein,
+        tracker: SimulationTracker,
+        save: bool = True,
+        filename: str = "max_compactness.png",
+) -> None:
+    """Plot the maximum-compactness fold recorded during the simulation."""
+    fold = tracker.max_compactness_fold
+    x = [fold[i][0] for i in range(protein.sequence_length)]
+    y = [fold[i][1] for i in range(protein.sequence_length)]
 
     fig, ax = plt.subplots()
-    for i in range(protein.sequence_length):
-        x.append(protein.max_compactness_fold[i][0])
-        y.append(protein.max_compactness_fold[i][1])
     ax.plot(x, y, alpha=0.5)
-    for i, coord in enumerate(protein.fold):
+    for i in range(protein.sequence_length):
         ax.scatter(x[i], y[i], marker='$' + protein.sequence[i] + '$', s=20, color='red')
+
     ax.set_xlim(min(x) - 6, max(x) + 6)
     ax.set_ylim(min(y) - 6, max(y) + 6)
     ax.grid(alpha=0.2)
     ax.set_title('Max compactness structure')
-    comp = max(protein.compactness_evolution)
-    en = protein.energy_evolution[protein.compactness_evolution.index(comp)]
-    string = f'Energy: {en}'
-    string_comp = f'Compactness: {comp / (max(protein.compactness_evolution) + 10e-15):.2f}'  # the +10e-15 is used for numerical stability (avoid division by 0)
-    ax.text(0.01, 0.99, string, ha='left', va='top', transform=ax.transAxes)
-    ax.text(0.01, 0.95, string_comp, ha='left', va='top', transform=ax.transAxes)
+
+    compactness = max(tracker.compactness_evolution)
+    idx = tracker.compactness_evolution.index(compactness)
+    energy = tracker.energy_evolution[idx]
+    max_comp = compactness + 1e-14
+
+    ax.text(0.01, 0.99, f'Energy: {energy}', ha='left', va='top', transform=ax.transAxes)
+    ax.text(0.01, 0.95, f'Compactness: {compactness / max_comp:.2f}', ha='left', va='top', transform=ax.transAxes)
+
     plt.show(block=False)
     if save:
         plt.savefig(f"output/{filename}", format="png", bbox_inches="tight", dpi=200)
 
 
-def plot_energy(protein, avg: int = 10, save=True, filename="energy_evolution.png", annealing=True) -> None:
-    en_evo = np.array(protein.energy_evolution[1:].copy())
+# ------------------------------------------------------------------
+# Evolution plots
+# ------------------------------------------------------------------
+
+def plot_energy(
+        tracker: SimulationTracker,
+        avg: int = 10,
+        save: bool = True,
+        filename: str = "energy_evolution.png",
+        annealing: bool = True,
+) -> None:
+    """Plot the energy evolution over simulation steps, averaged in windows of `avg`."""
+    en_evo = np.array(tracker.energy_evolution[1:].copy())
     x = np.arange(0, len(en_evo), avg)
 
     fig, ax = plt.subplots()
     try:
         en_evo_avg = en_evo.reshape(-1, avg).mean(axis=1)
-    except:
-        print(f'Mean procedure skipped for energy: {avg} steps')
+    except ValueError:
+        print(f'Mean procedure skipped for energy: array not divisible by {avg}')
         en_evo_avg = en_evo
         x = np.arange(len(en_evo_avg))
 
-    ax.set_title(f'Energy evolution of the system averaged by {avg} steps')
+    ax.set_title(f'Energy evolution averaged over {avg}-step windows')
     ax.set_xlabel('Time step')
     ax.set_ylabel('Energy', color='b')
     ax.tick_params(axis='y', labelcolor='b')
     ax.plot(x, en_evo_avg, color='b', label='Energy')
 
-    # Marker: minimum energy → magenta
-    min_index = np.argmin(en_evo_avg)
-    min_energy = en_evo_avg[min_index]
-    ax.plot(x[min_index], min_energy, 'yo', markersize=4,
-            label=f'Min energy = {min_energy:.2f}')
-
-    # Marker: final energy → green
-    final_energy = en_evo_avg[-1]
-    ax.plot(x[-1], final_energy, 'go', markersize=4,
-            label=f'Final energy = {final_energy:.2f}')
-
+    min_idx = np.argmin(en_evo_avg)
+    ax.plot(x[min_idx], en_evo_avg[min_idx], 'yo', markersize=4,
+            label=f'Min energy = {en_evo_avg[min_idx]:.2f}')
+    ax.plot(x[-1], en_evo_avg[-1], 'go', markersize=4,
+            label=f'Final energy = {en_evo_avg[-1]:.2f}')
     ax.legend()
 
     if annealing:
-        T = np.array(protein.temperature_evolution[1:])
+        T = np.array(tracker.temperature_evolution[1:])
         try:
             T_avg = T.reshape(-1, avg).mean(axis=1)
-        except:
+        except ValueError:
             T_avg = T
         ax_tw = ax.twinx()
         ax_tw.set_ylabel('T', color='r')
@@ -153,41 +205,44 @@ def plot_energy(protein, avg: int = 10, save=True, filename="energy_evolution.pn
         plt.savefig(f"output/{filename}", format="png", bbox_inches="tight", dpi=200)
 
 
-def plot_compactness(protein, avg: int = 10, save=True, filename="compactness_evolution.png", annealing=True) -> None:
-    comp = np.array(protein.compactness_evolution[1:].copy())
-    comp = comp / max(comp)
+def plot_compactness(
+        tracker: SimulationTracker,
+        avg: int = 10,
+        save: bool = True,
+        filename: str = "compactness_evolution.png",
+        annealing: bool = True,
+) -> None:
+    """Plot the normalized compactness evolution over simulation steps."""
+    comp = np.array(tracker.compactness_evolution[1:].copy(), dtype=float)
+    comp /= comp.max()
     x = np.arange(0, len(comp), avg)
 
     fig, ax = plt.subplots()
     try:
         comp_avg = comp.reshape(-1, avg).mean(axis=1)
-    except:
-        print(f'Mean procedure skipped for compactness: {avg} steps')
+    except ValueError:
+        print(f'Mean procedure skipped for compactness: array not divisible by {avg}')
         comp_avg = comp
         x = np.arange(len(comp_avg))
 
-    ax.set_title(f'Compactness evolution of the system averaged by {avg} steps')
+    ax.set_title(f'Compactness evolution averaged over {avg}-step windows')
     ax.set_xlabel('Time step')
     ax.set_ylabel('Compactness', color='b')
     ax.tick_params(axis='y', labelcolor='b')
     ax.plot(x, comp_avg, color='b', label='Compactness')
 
-    # Marker: maximum compactness → magenta
-    max_index = np.argmax(comp_avg)
-    max_comp = comp_avg[max_index]
-    ax.plot(x[max_index], max_comp, 'yo', markersize=4, label=f'Max compactness = {max_comp:.2f}')
-
-    # Marker: final compactness → green
-    final_comp = comp_avg[-1]
-    ax.plot(x[-1], final_comp, 'go', markersize=4, label=f'Final compactness = {final_comp:.2f}')
-
+    max_idx = np.argmax(comp_avg)
+    ax.plot(x[max_idx], comp_avg[max_idx], 'yo', markersize=4,
+            label=f'Max compactness = {comp_avg[max_idx]:.2f}')
+    ax.plot(x[-1], comp_avg[-1], 'go', markersize=4,
+            label=f'Final compactness = {comp_avg[-1]:.2f}')
     ax.legend()
 
     if annealing:
-        T = np.array(protein.temperature_evolution[1:])
+        T = np.array(tracker.temperature_evolution[1:])
         try:
             T_avg = T.reshape(-1, avg).mean(axis=1)
-        except:
+        except ValueError:
             T_avg = T
         ax_tw = ax.twinx()
         ax_tw.set_ylabel('T', color='r')
@@ -200,29 +255,49 @@ def plot_compactness(protein, avg: int = 10, save=True, filename="compactness_ev
         plt.savefig(f"output/{filename}", format="png", bbox_inches="tight", dpi=200)
 
 
-def create_gif(protein, filename="evolution.gif") -> None:
+# ------------------------------------------------------------------
+# GIF
+# ------------------------------------------------------------------
+
+def create_gif(
+        protein: Protein,
+        tracker: SimulationTracker,
+        filename: str = "evolution.gif",
+) -> None:
     """
-    Create a GIF of the evolution process using saved frames.
-    Displays the real simulation step in the title.
-    Progress is shown with tqdm.
+    Create an animated GIF of accepted fold moves collected during the simulation.
+
+    Parameters
+    ----------
+    protein : Protein
+        Used to read the sequence for monomer labels.
+    tracker : SimulationTracker
+        Source of GIF frames (gif_struct, gif_steps) and total step count.
+    filename : str
+        Output GIF filename (saved inside output/).
     """
+    n_steps = tracker.gif_steps[-1] if tracker.gif_steps else 0
+
     fig, ax = plt.subplots()
     writer = PillowWriter(fps=2)
 
     with writer.saving(fig, f'output/{filename}', 200):
-        for frame, step_real in tqdm(zip(protein.gif_struct, protein.gif_steps), total=len(protein.gif_struct),
-                                     desc="Creating GIF"):
+        for frame, step_real in tqdm(
+                zip(tracker.gif_struct, tracker.gif_steps),
+                total=len(tracker.gif_struct),
+                desc="Creating GIF",
+        ):
             x = [coord[0] for coord in frame]
             y = [coord[1] for coord in frame]
 
             ax.plot(x, y, alpha=0.5)
-            for j, coord in enumerate(frame):
+            for j in range(protein.sequence_length):
                 ax.scatter(x[j], y[j], marker='$' + protein.sequence[j] + '$', s=20, color='red')
 
             ax.set_xlim(min(x) - 6, max(x) + 6)
             ax.set_ylim(min(y) - 6, max(y) + 6)
             ax.grid(alpha=0.2)
-            ax.set_title(f"Evolution step {step_real}/{protein.n_steps}", fontsize=10)
+            ax.set_title(f"Evolution step {step_real}/{n_steps}", fontsize=10)
 
             fig.canvas.draw()
             writer.grab_frame()
