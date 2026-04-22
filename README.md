@@ -130,8 +130,8 @@ folding involves many additional factors. More advanced models are used for accu
 
 ### Monte Carlo simulation algorithm
 
-1. $\alpha := $ initial protein fold
-2. $T := $ initial temperature for annealing
+1. $\alpha :=$ initial protein fold
+2. $T :=$ initial temperature for annealing
 3. Repeat for $n$ steps:
     4. Optionally, decrease temperature $T$ (anneal)
     5. Compute $E(\alpha)$
