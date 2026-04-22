@@ -152,9 +152,9 @@ of $\varepsilon = 1$.
 1. **Initialization**:
     * $n_{contacts} := 0$
 2. **Monomer Loop** (For each monomer $i$ in the protein sequence):
-    * If monomer $i$ is **Hydrophobic**:
+    * If monomer $i$ is Hydrophobic:
         * $neighbors(i) \leftarrow$ `get_neighbors(i)` // excluding $i \pm 1$ neighbors
-        * $n_{contacts} \leftarrow n_{contacts} + |neighbors(i)|$
+        * $n_{contacts} \leftarrow n_{contacts} + neighbors(i)$
 3. **Final Calculation**:
     * $E(\alpha) \leftarrow - \varepsilon \times \frac{n_{contacts}}{2}$ // unique contacts
 4. **Result**:
