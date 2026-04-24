@@ -130,17 +130,18 @@ folding involves many additional factors. More advanced models are used for accu
 
 ### Monte Carlo simulation algorithm
 
-1. $\alpha :=$ initial protein fold
-2. $T :=$ initial temperature for annealing
-3. Repeat for $n$ steps:
-    4. Optionally, decrease temperature $T$ (anneal)
-    5. Compute $E(\alpha)$
-    6. Generate new random fold $\alpha'$
-    7. $\Delta E := E(\alpha') - E(\alpha)$
-    8. If $\Delta E < 0$:
-        9. $\alpha \leftarrow \alpha'$  // Accept new fold $\alpha'$
-    9. Else:
-        10. Accept new fold with probability $p = e^{-\frac{\Delta E}{k_B T}}$
+1. **Initialization**:
+    * $\alpha :=$ initial protein fold
+    * $T :=$ initial temperature for annealing
+2. **Main Loop** (Repeat for $n$ steps):
+    * Optionally, decrease temperature $T$ (anneal)
+    * Compute current energy $E(\alpha)$
+    * Generate new random fold $\alpha'$
+    * Calculate $\Delta E := E(\alpha') - E(\alpha)$
+    * If $\Delta E < 0$:
+        * $\alpha \leftarrow \alpha'$ // Accept new fold $\alpha'$
+    * Else:
+        * Accept new fold with probability $p = e^{-\frac{\Delta E}{k_B T}}$
 
 ### Computing $E(\alpha)$
 
@@ -148,13 +149,16 @@ The energy $E$ of a fold $\alpha$ is defined by the number of non-consecutive H-
 that are adjacent on the lattice but not in the primary sequence (backbone), the system's energy is reduced by a factor
 of $\varepsilon = 1$.
 
-1. $n_{contacts}:= 0$
-2. For each monomer $i$ in the protein sequence:
-    3. If monomer $i$ is Hydrophobic:
-        4. neighbors($i$) $\leftarrow$ get_neighbors($i$) // excluding $i \pm 1$ neighbors
-        5. $n_{contacts} \leftarrow n_{contacts} +$ neighbors($i$)
-        6. $E(\alpha) \leftarrow - \varepsilon \times \frac{n_{contacts}}{2}$  // unique contacts
-8. return $E(\alpha)$
+1. **Initialization**:
+    * $n_{contacts} := 0$
+2. **Monomer Loop** (For each monomer $i$ in the protein sequence):
+    * If monomer $i$ is Hydrophobic:
+        * $neighbors(i) \leftarrow$ `get_neighbors(i)` // excluding $i \pm 1$ neighbors
+        * $n_{contacts} \leftarrow n_{contacts} + neighbors(i)$
+3. **Final Calculation**:
+    * $E(\alpha) \leftarrow - \varepsilon \times \frac{n_{contacts}}{2}$ // unique contacts
+4. **Result**:
+    * **Return** $E(\alpha)$
 
 ### Generating a Random Fold
 
