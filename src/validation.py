@@ -3,7 +3,7 @@ from numpy import isclose
 from geometry import get_distance
 
 
-def is_valid_fold(fold: list[list[float]]) -> bool:
+def is_valid_fold(fold: list[list[int]]) -> bool:
     """
     Check if the given protein fold is valid:
     - Self-avoiding walk (SAW, no overlapping monomers)
@@ -11,7 +11,7 @@ def is_valid_fold(fold: list[list[float]]) -> bool:
 
     Parameters
     ----------
-    fold : list[list[float]]
+    fold : list[list[int]]
         Fold of the protein containing x and y coordinates for each monomer.
 
     Returns
@@ -27,9 +27,11 @@ def is_valid_fold(fold: list[list[float]]) -> bool:
             return False
         seen.add(pos_tuple)
 
-        # check distance to next monomer
+        # check distance to next monomer using squared distance for efficiency
         if i < len(fold) - 1:
-            if not isclose(get_distance(pos, fold[i + 1]), 1):
+            dx = fold[i][0] - fold[i+1][0]
+            dy = fold[i][1] - fold[i+1][1]
+            if (dx**2 + dy**2) != 1:
                 return False
 
     return True

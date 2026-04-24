@@ -101,7 +101,7 @@ class SimulationTracker:
         self._update_best_energy(fold, energy)
         self._update_best_compactness(fold, compactness)
 
-        if self.do_gif and accepted:
+        if self.do_gif:
             self._collect_gif_frame(step, fold, n_steps)
 
     # ------------------------------------------------------------------

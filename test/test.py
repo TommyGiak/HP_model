@@ -227,6 +227,7 @@ def test_hp_sequence_transform_lenght_correct():
 
 
 def test_evolution_minimize_energy():
+    random.seed(config.seed)
     prot = p.Protein(config)
     prot.sequence = seq
     prot.fold = generate_linear_fold(seq)
@@ -244,6 +245,7 @@ def test_evolution_minimize_energy():
 
 
 def test_evolution_maximize_compactness():
+    random.seed(config.seed)
     prot = p.Protein(config)
     prot.sequence = seq
     prot.fold = generate_linear_fold(seq)
