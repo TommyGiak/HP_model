@@ -62,7 +62,7 @@ class FoldSampler:
     without modifying existing simulation code.
     """
 
-    MAX_TRIES: int = 10 ** 9
+    MAX_TRIES: int = 10 ** 5
 
     def sample(self, protein: "Protein") -> List[List[int]]:
         """

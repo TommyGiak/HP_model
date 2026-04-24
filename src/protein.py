@@ -23,8 +23,21 @@ class Protein:
     """
 
     def __init__(self, config: config.Configuration) -> None:
+        self._sequence: str = ""
+        self._fold: list[list[int]] = []
+        self._pos_map: dict[tuple[int, int], int] = {}
+        
         self._init_sequence(config)
         self._init_structure(config)
+
+    @property
+    def fold(self) -> list[list[int]]:
+        return self._fold
+
+    @fold.setter
+    def fold(self, new_fold: list[list[int]]) -> None:
+        self._fold = new_fold
+        self._pos_map = {tuple(pos): i for i, pos in enumerate(new_fold)}
 
     def _init_sequence(self, config: config.Configuration) -> None:
         """Parse and validate the protein sequence, converting to HP if needed."""
@@ -40,15 +53,17 @@ class Protein:
         if config.use_struct:
             if len(config.fold) != self.sequence_length:
                 raise AssertionError("Sequence and structure lengths do not match")
-            self.fold = config.fold
+            new_fold = config.fold
         else:
-            self.fold = geometry.generate_linear_fold(self.sequence)
+            new_fold = geometry.generate_linear_fold(self.sequence)
 
-        if not validation.is_valid_fold(self.fold):
+        if not validation.is_valid_fold(new_fold):
             raise AssertionError(
                 "Invalid structure: not a self-avoiding walk (SAW) "
                 "or distances between consecutive points differ from 1"
             )
+        
+        self.fold = new_fold
 
     def get_energy(self, epsilon: float = 1.0) -> float:
         """
@@ -67,11 +82,10 @@ class Protein:
         float
             Total energy (≤ 0).
         """
-        pos_map = {tuple(pos): i for i, pos in enumerate(self.fold)}
         count_hh = 0
         for i in range(self.sequence_length):
             if self.sequence[i] == 'H':
-                neighbors = self.get_neighbors(i, pos_map)
+                neighbors = self.get_neighbors(i, self._pos_map)
                 count_hh += neighbors.count('H')
         energy = -epsilon * (count_hh * 0.5)
         return energy
@@ -85,10 +99,9 @@ class Protein:
         int
             Total contact count.
         """
-        pos_map = {tuple(pos): i for i, pos in enumerate(self.fold)}
         total = 0
         for i in range(self.sequence_length):
-            neighbors = self.get_neighbors(i, pos_map)
+            neighbors = self.get_neighbors(i, self._pos_map)
             total += len(neighbors)
         return total // 2
 
