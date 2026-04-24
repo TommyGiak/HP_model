@@ -21,16 +21,21 @@ def _attempt_fold(protein: "Protein") -> Optional[List[List[int]]]:
     Returns the new fold if valid (SAW), or None if it self-intersects.
     """
     index = random.randint(1, protein.sequence_length - 2)
-    x, y = protein.fold[index]
+    pivot = protein.fold[index]
+    x, y = pivot
 
+    # Tail includes the pivot and all subsequent monomers
     tail = [list(coord) for coord in protein.fold[index:]]
 
     # Diagonal move is allowed when previous and next monomers are not aligned
-    dist = geometry.get_distance(protein.fold[index - 1], protein.fold[index + 1])
-    diag_move = math.isclose(dist, math.sqrt(2))
+    # Previous: fold[index-1], Next: fold[index+1]
+    dx = protein.fold[index - 1][0] - protein.fold[index + 1][0]
+    dy = protein.fold[index - 1][1] - protein.fold[index + 1][1]
+    diag_move = (dx**2 + dy**2) == 2
 
-    # Shift tail to origin for transformation
+    # Shift tail to origin (pivot becomes [0,0])
     tail = [[cx - x, cy - y] for cx, cy in tail]
+    # 'previous' monomer relative to the pivot [0,0]
     previous = [
         protein.fold[index - 1][0] - x,
         protein.fold[index - 1][1] - y,

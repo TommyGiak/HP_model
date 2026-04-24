@@ -67,10 +67,11 @@ class Protein:
         float
             Total energy (≤ 0).
         """
+        pos_map = {tuple(pos): i for i, pos in enumerate(self.fold)}
         count_hh = 0
         for i in range(self.sequence_length):
             if self.sequence[i] == 'H':
-                neighbors = self.get_neighbors(i)
+                neighbors = self.get_neighbors(i, pos_map)
                 count_hh += neighbors.count('H')
         energy = -epsilon * (count_hh * 0.5)
         return energy
@@ -84,13 +85,14 @@ class Protein:
         int
             Total contact count.
         """
+        pos_map = {tuple(pos): i for i, pos in enumerate(self.fold)}
         total = 0
         for i in range(self.sequence_length):
-            neighbors = self.get_neighbors(i)
+            neighbors = self.get_neighbors(i, pos_map)
             total += len(neighbors)
         return total // 2
 
-    def get_neighbors(self, i: int) -> str:
+    def get_neighbors(self, i: int, pos_map: dict = None) -> str:
         """
         Return the sequence characters (H/P) of lattice neighbors of monomer i,
         excluding backbone (i-1, i+1) neighbors.
@@ -99,17 +101,27 @@ class Protein:
         ----------
         i : int
             Index of the monomer.
+        pos_map : dict, optional
+            A dictionary mapping (x, y) tuples to monomer indices.
+            If None, it is constructed on the fly (less efficient).
 
         Returns
         -------
         str
             Concatenated sequence characters of non-bonded neighbors.
         """
+        if pos_map is None:
+            pos_map = {tuple(pos): i for i, pos in enumerate(self.fold)}
+
         x, y = self.fold[i]
-        candidates = [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]]
-        if i > 0 and self.fold[i - 1] in candidates:
-            candidates.remove(self.fold[i - 1])
-        if i < self.sequence_length - 1 and self.fold[i + 1] in candidates:
-            candidates.remove(self.fold[i + 1])
-        neighbor_indices = [j for j, pos in enumerate(self.fold) if pos in candidates]
-        return ''.join(self.sequence[j] for j in neighbor_indices)
+        candidates = [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]
+        
+        neighbor_chars = []
+        for cand in candidates:
+            j = pos_map.get(cand)
+            if j is not None:
+                # Exclude backbone neighbors
+                if j != i - 1 and j != i + 1:
+                    neighbor_chars.append(self.sequence[j])
+        
+        return ''.join(neighbor_chars)

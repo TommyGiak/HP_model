@@ -43,4 +43,4 @@ class Configuration:
         print(f"Structure:          {'Non-linear' if self.use_struct else 'Linear'}")
         print(f"Folding steps:      {self.n_steps}")
         print(f"Annealing:          {self.do_annealing}")
-        print(f"Temperature:        {self.temperature if self.do_annealing else 'Undefined'}")
+        print(f"Temperature:        {self.temperature}")

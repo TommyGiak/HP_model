@@ -165,6 +165,10 @@ def plot_energy(
 ) -> None:
     """Plot the energy evolution over simulation steps, averaged in windows of `avg`."""
     en_evo = np.array(tracker.energy_evolution[1:].copy())
+    if len(en_evo) == 0:
+        print("Energy evolution is empty, skipping plot.")
+        return
+
     x = np.arange(0, len(en_evo), avg)
 
     fig, ax = plt.subplots()
@@ -214,7 +218,14 @@ def plot_compactness(
 ) -> None:
     """Plot the normalized compactness evolution over simulation steps."""
     comp = np.array(tracker.compactness_evolution[1:].copy(), dtype=float)
-    comp /= comp.max()
+    if len(comp) == 0:
+        print("Compactness evolution is empty, skipping plot.")
+        return
+
+    c_max = comp.max()
+    if c_max > 0:
+        comp /= c_max
+    
     x = np.arange(0, len(comp), avg)
 
     fig, ax = plt.subplots()
