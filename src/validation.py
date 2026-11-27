@@ -1,8 +1,3 @@
-from numpy import isclose
-
-from geometry import get_distance
-
-
 def is_valid_fold(fold: list[list[int]]) -> bool:
     """
     Check if the given protein fold is valid:
@@ -52,7 +47,6 @@ def is_valid_sequence(sequence: str) -> bool:
         True if the sequence is valid, False otherwise.
     """
     if len(sequence) < 3:
-        print('The sequence is too short. It must be at least 3.')
         return False
 
     allowed_chars = {'H', 'P'}

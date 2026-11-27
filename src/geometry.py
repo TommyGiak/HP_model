@@ -1,4 +1,4 @@
-from numpy import sqrt
+import math
 
 
 def generate_linear_fold(seq: str) -> list[list[int]]:
@@ -37,4 +37,4 @@ def get_distance(coord1: list[float], coord2: list[float]) -> float:
     """
     dx = coord1[0] - coord2[0]
     dy = coord1[1] - coord2[1]
-    return sqrt(dx ** 2 + dy ** 2)
+    return math.sqrt(dx ** 2 + dy ** 2)

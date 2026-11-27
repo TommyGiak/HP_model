@@ -26,9 +26,19 @@ class Protein:
         self._sequence: str = ""
         self._fold: list[list[int]] = []
         self._pos_map: dict[tuple[int, int], int] = {}
+        self.sequence_length: int = 0
         
         self._init_sequence(config)
         self._init_structure(config)
+
+    @property
+    def sequence(self) -> str:
+        return self._sequence
+
+    @sequence.setter
+    def sequence(self, new_seq: str) -> None:
+        self._sequence = new_seq
+        self.sequence_length = len(new_seq)
 
     @property
     def fold(self) -> list[list[int]]:
@@ -45,7 +55,9 @@ class Protein:
             self.sequence = config.sequence
         else:
             self.sequence = utils.convert_to_hp(config.sequence)
-        self.sequence_length = len(self.sequence)
+
+        if self.sequence_length < 3:
+            raise ValueError("Protein sequence must have at least 3 monomers.")
 
     def _init_structure(self, config: config.Configuration) -> None:
         """Initialize the 2D lattice fold, either linear or user-provided."""

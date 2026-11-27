@@ -7,6 +7,8 @@ import os
 import random
 import sys
 
+import pytest
+
 from math import isclose, sqrt
 
 # Use insert(0, ...) so src/ is resolved before any other path entry,
@@ -23,7 +25,9 @@ from transforms import tail_fold, diagonal_move
 from utils import convert_to_hp
 
 from fold_sampler import FoldSampler
+from metropolis import metropolis_rule
 from simulation import Simulation
+from tracker import SimulationTracker
 
 config_path = os.path.join(os.path.dirname(__file__), 'config_test.yaml')
 config = Configuration(config_path)
@@ -218,12 +222,79 @@ def test_diagonal_move_equal_struct():
     assert new_struct[1:] == correct_structure[1:]
 
 
+def test_diagonal_move_does_not_mutate_input():
+    struct_copy = [list(c) for c in correct_structure]
+    original_first = list(struct_copy[0])
+    new_struct = diagonal_move(struct_copy, [0, 0])
+    assert struct_copy[0] == original_first
+    assert new_struct is not struct_copy
+
+
 def test_hp_sequence_transform_letters_correct():
     assert set(convert_to_hp(seq2)) == {'H', 'P'}
 
 
-def test_hp_sequence_transform_lenght_correct():
+def test_hp_sequence_transform_length_correct():
     assert len(convert_to_hp(seq2)) == len(seq2)
+
+
+def test_hp_sequence_transform_invalid_amino_acid():
+    with pytest.raises(ValueError, match="Amino acid 'J' not recognized"):
+        convert_to_hp(seq_invalid)
+
+
+def test_metropolis_rule_acceptance_cases():
+    # Downhill move (lower energy): always accepted
+    assert metropolis_rule(current_energy=0.0, new_energy=-1.0, temperature=1.0)
+    assert metropolis_rule(current_energy=0.0, new_energy=-1.0, temperature=0.0)
+
+    # Neutral move (equal energy): always accepted (prob = exp(0) = 1)
+    assert metropolis_rule(current_energy=-2.0, new_energy=-2.0, temperature=1.0)
+    assert metropolis_rule(current_energy=-2.0, new_energy=-2.0, temperature=0.0)
+
+    # Uphill move (higher energy) at T <= 0: always rejected
+    assert not metropolis_rule(current_energy=-2.0, new_energy=-1.0, temperature=0.0)
+    assert not metropolis_rule(current_energy=-2.0, new_energy=-1.0, temperature=-1.0)
+
+
+def test_protein_sequence_setter_updates_length():
+    prot = p.Protein(config)
+    prot.sequence = 'HPHPHPH'
+    assert prot.sequence_length == 7
+    assert prot.sequence == 'HPHPHPH'
+
+
+def test_protein_short_sequence_raises():
+    short_cfg = copy.copy(config)
+    short_cfg.sequence = 'HP'
+    with pytest.raises(ValueError, match="at least 3 monomers"):
+        p.Protein(short_cfg)
+
+
+def test_simulation_tracker_metrics():
+    fold = [[0, 0], [1, 0], [1, 1]]
+    tracker = SimulationTracker(
+        initial_fold=fold,
+        initial_energy=0.0,
+        initial_compactness=0,
+        initial_temperature=1.0,
+        do_gif=True,
+    )
+    assert tracker.energy_evolution == [0.0]
+    assert tracker.compactness_evolution == [0]
+
+    tracker.record(
+        step=0,
+        fold=fold,
+        energy=-1.0,
+        compactness=1,
+        temperature=0.9,
+        accepted=True,
+        n_steps=10,
+    )
+    assert tracker._min_energy == -1.0
+    assert tracker._max_compactness == 1
+    assert len(tracker.gif_struct) == 1
 
 
 def test_evolution_minimize_energy():

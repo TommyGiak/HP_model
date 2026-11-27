@@ -2,6 +2,7 @@
 Plotting utilities for protein folding simulation results.
 @author: Tommaso Giacometti
 """
+import os
 from typing import Optional
 
 import matplotlib.pyplot as plt
@@ -81,7 +82,9 @@ def plot_fold(
 
     plt.show(block=False)
     if save:
+        os.makedirs("output", exist_ok=True)
         plt.savefig(f"output/{filename}", format="png", bbox_inches="tight", dpi=200)
+    plt.close(fig)
 
 
 def plot_min_energy_fold(
@@ -115,7 +118,9 @@ def plot_min_energy_fold(
 
     plt.show(block=False)
     if save:
+        os.makedirs("output", exist_ok=True)
         plt.savefig(f"output/{filename}", format="png", bbox_inches="tight", dpi=200)
+    plt.close(fig)
 
 
 def plot_max_compactness_fold(
@@ -149,7 +154,9 @@ def plot_max_compactness_fold(
 
     plt.show(block=False)
     if save:
+        os.makedirs("output", exist_ok=True)
         plt.savefig(f"output/{filename}", format="png", bbox_inches="tight", dpi=200)
+    plt.close(fig)
 
 
 # ------------------------------------------------------------------
@@ -206,7 +213,9 @@ def plot_energy(
     fig.tight_layout()
     plt.show(block=False)
     if save:
+        os.makedirs("output", exist_ok=True)
         plt.savefig(f"output/{filename}", format="png", bbox_inches="tight", dpi=200)
+    plt.close(fig)
 
 
 def plot_compactness(
@@ -263,7 +272,9 @@ def plot_compactness(
     fig.tight_layout()
     plt.show(block=False)
     if save:
+        os.makedirs("output", exist_ok=True)
         plt.savefig(f"output/{filename}", format="png", bbox_inches="tight", dpi=200)
+    plt.close(fig)
 
 
 # ------------------------------------------------------------------
@@ -287,29 +298,37 @@ def create_gif(
     filename : str
         Output GIF filename (saved inside output/).
     """
+    if not tracker.gif_struct:
+        print("No GIF frames collected, skipping GIF creation.")
+        return
+
+    os.makedirs("output", exist_ok=True)
     n_steps = tracker.gif_steps[-1] if tracker.gif_steps else 0
 
     fig, ax = plt.subplots()
-    writer = PillowWriter(fps=2)
+    try:
+        writer = PillowWriter(fps=2)
 
-    with writer.saving(fig, f'output/{filename}', 200):
-        for frame, step_real in tqdm(
-                zip(tracker.gif_struct, tracker.gif_steps),
-                total=len(tracker.gif_struct),
-                desc="Creating GIF",
-        ):
-            x = [coord[0] for coord in frame]
-            y = [coord[1] for coord in frame]
+        with writer.saving(fig, f'output/{filename}', 200):
+            for frame, step_real in tqdm(
+                    zip(tracker.gif_struct, tracker.gif_steps),
+                    total=len(tracker.gif_struct),
+                    desc="Creating GIF",
+            ):
+                x = [coord[0] for coord in frame]
+                y = [coord[1] for coord in frame]
 
-            ax.plot(x, y, alpha=0.5)
-            for j in range(protein.sequence_length):
-                ax.scatter(x[j], y[j], marker='$' + protein.sequence[j] + '$', s=20, color='red')
+                ax.plot(x, y, alpha=0.5)
+                for j in range(protein.sequence_length):
+                    ax.scatter(x[j], y[j], marker='$' + protein.sequence[j] + '$', s=20, color='red')
 
-            ax.set_xlim(min(x) - 6, max(x) + 6)
-            ax.set_ylim(min(y) - 6, max(y) + 6)
-            ax.grid(alpha=0.2)
-            ax.set_title(f"Evolution step {step_real}/{n_steps}", fontsize=10)
+                ax.set_xlim(min(x) - 6, max(x) + 6)
+                ax.set_ylim(min(y) - 6, max(y) + 6)
+                ax.grid(alpha=0.2)
+                ax.set_title(f"Evolution step {step_real}/{n_steps}", fontsize=10)
 
-            fig.canvas.draw()
-            writer.grab_frame()
-            ax.clear()
+                fig.canvas.draw()
+                writer.grab_frame()
+                ax.clear()
+    finally:
+        plt.close(fig)

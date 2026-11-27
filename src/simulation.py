@@ -67,9 +67,10 @@ class Simulation:
             )
 
     def _update_temperature(self, temperature: float, step: int) -> float:
-        """Apply linear annealing schedule if enabled."""
-        if self.do_annealing and temperature > 0.002:
-            return self.starting_temperature * (1 - step / self.n_steps)
+        """Apply linear annealing schedule if enabled, clamped to 0.002 floor."""
+        if self.do_annealing:
+            schedule_temp = self.starting_temperature * (1 - step / self.n_steps)
+            return max(schedule_temp, 0.002)
         return temperature
 
     def _metropolis_step(self, temperature: float) -> Tuple[bool, float, int]:

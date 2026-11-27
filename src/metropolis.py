@@ -5,7 +5,7 @@ import random
 
 def metropolis_rule(current_energy: float, new_energy: float, temperature: float) -> bool:
     """Decide if a new state should be accepted."""
-    if new_energy < current_energy:
+    if new_energy <= current_energy:
         return True
     if temperature <= 0:
         return False
