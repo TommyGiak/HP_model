@@ -16,13 +16,17 @@ def diagonal_move(struct: list[list[int]], previous: list[int]) -> list[list[int
     list[list[int]]
         Updated structure with the first monomer moved.
     """
+    if len(struct) < 2:
+        raise ValueError("Structure must have at least 2 monomers for a diagonal move.")
+
     x_prev, y_prev = previous
     x_next, y_next = struct[1]
 
-    # Move the first monomer along the diagonal
-    struct[0] = [x_prev + x_next, y_prev + y_next]
+    # Return a new structure list without mutating the input
+    new_struct = [list(coord) for coord in struct]
+    new_struct[0] = [x_prev + x_next, y_prev + y_next]
 
-    return struct
+    return new_struct
 
 
 def tail_fold(struct: list[list[int]], method: int, previous: list[int]) -> list[list[int]]:

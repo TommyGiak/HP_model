@@ -15,19 +15,19 @@ class Configuration:
         self.sequence = config['sequence'].replace(' ', '').replace('\n', '')
 
         # Structure options
-        structure_cfg = config.get('structure', {})
-        self.use_struct = structure_cfg.get('use_structure')
+        structure_cfg = config.get('structure') or {}
+        self.use_struct = bool(structure_cfg.get('use_structure', False))
         self.fold = structure_cfg.get('coordinates') if self.use_struct else None
 
         # Simulation options
-        sim_cfg = config.get('simulation', {})
-        self.n_steps = sim_cfg.get('folding_steps')
-        self.do_annealing = sim_cfg.get('annealing')
-        self.temperature = sim_cfg.get('temperature')
+        sim_cfg = config.get('simulation') or {}
+        self.n_steps = sim_cfg.get('folding_steps', 5000)
+        self.do_annealing = bool(sim_cfg.get('annealing', True))
+        self.temperature = float(sim_cfg.get('temperature', 5.0))
 
         # Plot options
-        plot_cfg = config.get('plot', {})
-        self.do_gif = plot_cfg.get('create_gif')
+        plot_cfg = config.get('plot') or {}
+        self.do_gif = bool(plot_cfg.get('create_gif', False))
 
         # Seed
         seed_val = config.get('seed', None)

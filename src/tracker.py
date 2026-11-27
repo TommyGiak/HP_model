@@ -124,8 +124,8 @@ class SimulationTracker:
             self, step: int, fold: List[List[int]], n_steps: int
     ) -> None:
         """
-        Collect a GIF frame: every step for the first 10, then at ~100 evenly spaced steps.
+        Collect a GIF frame: every step for the first 10, the final step, and ~100 evenly spaced steps.
         """
-        if step < 10 or step % max(1, n_steps // 100) == 0:
+        if step < 10 or step == n_steps - 1 or step % max(1, n_steps // 100) == 0:
             self.gif_struct.append([list(c) for c in fold])
             self.gif_steps.append(step)
